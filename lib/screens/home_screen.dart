@@ -8,10 +8,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Home"),
-      ),
+      ), // Menampilkan AppBar dengan judul "Home"
       body: const Center(
         child: Text(
-          "Login Berhasil",
+          "Login Berhasil", // Menampilkan pesan "Login Berhasil" di tengah layar
         ),
       ),
     );
