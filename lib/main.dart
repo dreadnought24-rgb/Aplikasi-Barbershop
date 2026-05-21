@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Import booking screen
-import 'booking_screen.dart';
+import 'screens/booking_screen.dart';
 
 void main() {
 
