@@ -4,7 +4,7 @@ import 'package:flutter_application_1/models/booking_model.dart';
 
 class BookingService {
   // IP 10.0.2.2 untuk emulator Android lokal ke PC
-  static const String baseUrl = "http://10.0.2.2/php_barbershop";
+  static const String baseUrl = "http://192.168.1.15/php_barbershop";
 
   // 1. Fungsi untuk mengirim data Booking (POST) - DIUBAH JADI STATIC
   static Future<BookingResponse> kirimBooking({

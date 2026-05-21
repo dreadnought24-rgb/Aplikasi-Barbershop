@@ -16,7 +16,7 @@ class BarberService {
     final response = await http.get(
 
       Uri.parse(
-        'http://10.0.2.2/barbershop/barber.php',
+        'http://192.168.1.15/barbershop/barber.php',
       ),
     );
 
