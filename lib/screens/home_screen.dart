@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'booking_screen.dart';
+import '../config/routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,14 +11,11 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const BookingScreen()),
-            );
+            // Berpindah ke form booking menggunakan Named Route terdaftar
+            Navigator.pushNamed(context, AppRoutes.booking);
           },
           child: const Text('Booking Sekarang'),
         ),
-        
       ),
     );
   }

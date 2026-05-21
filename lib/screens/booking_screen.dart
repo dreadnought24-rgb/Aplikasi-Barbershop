@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/barber_model.dart';
 import '../services/barber_service.dart';
 import '../services/booking_service.dart';
-import 'package:flutter_application_1/controllers/booking_controller.dart';
+import '../config/routes.dart';
+import '../controllers/booking_controller.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -50,8 +51,8 @@ class _BookingScreenState extends State<BookingScreen> {
 
     // Mengirim data dari inputan form
     bool isSuccess = await _controller.createBooking(
-      userId: "1", // Sementara hardcode, nanti bisa ambil dari session login
-      pencukurId: "2", // Sementara hardcode, nanti bisa diambil dari pilihan barberList
+      userId: "1", 
+      pencukurId: "2", 
       bookingDate: dateController.text,
       bookingTime: timeController.text,
       jumlahOrang: jumlahController.text,
@@ -67,10 +68,13 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     if (isSuccess) {
-      // Jika sukses, kamu bisa kosongkan form atau pindah halaman
+      // Jika sukses, kosongkan form
       dateController.clear();
       timeController.clear();
       jumlahController.clear();
+
+      // Pindah halaman ke Status sesuai skema project
+      Navigator.pushNamed(context, AppRoutes.status);
     }
   }
 

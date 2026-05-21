@@ -12,11 +12,11 @@ class BarberService {
   // Function mengambil data barber
   static Future<List<BarberModel>> getBarber() async {
 
-    // Request ke PHP
+    // URL sudah disesuaikan ke sub-folder barber/get_barbers.php
     final response = await http.get(
 
       Uri.parse(
-        'http://10.0.2.2/barbershop/barber.php',
+        'http://localhost/php_barbershop/barber/get_barbers.php',
       ),
     );
 

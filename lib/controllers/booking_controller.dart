@@ -1,5 +1,5 @@
-import 'package:flutter_application_1/services/booking_service.dart';
-import 'package:flutter_application_1/models/booking_model.dart';
+import '../services/booking_service.dart';
+import '../models/booking_model.dart';
 
 class BookingController {
   String statusMessage = "";

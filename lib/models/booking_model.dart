@@ -16,13 +16,9 @@ class BookingModel {
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
       barber: json['nama_pencukur'] ?? '',
-
       date: json['booking_date'] ?? '',
-
       time: json['booking_time'] ?? '',
-
       queue: json['queue_number'].toString(),
-
       status: json['status'] ?? '',
     );
   }

@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_application_1/models/booking_model.dart';
+import '../models/booking_model.dart';
 
 class BookingService {
-  // IP 10.0.2.2 untuk emulator Android lokal ke PC
-  static const String baseUrl = "http://10.0.2.2/php_barbershop";
+  // Sudah sesuai dengan nama folder di htdocs kamu
+  static const String baseUrl = "http://localhost/php_barbershop";
 
-  // 1. Fungsi untuk mengirim data Booking (POST) - DIUBAH JADI STATIC
+  // 1. Fungsi untuk mengirim data Booking (POST)
   static Future<BookingResponse> kirimBooking({
     required String userId,
     required String pencukurId,
@@ -61,16 +61,15 @@ class BookingService {
     }
   }
 
-  // 3. TAMBAHKAN FUNGSI INI AGAR SESUAI DENGAN YANG DIPANGGIL DI SCREEN
+  // 3. Fungsi untuk mengambil data slot waktu (GET)
   static Future<List<String>> getAvailableSlots() async {
     try {
-      final url = Uri.parse('$baseUrl/booking/get_slots.php'); // Sesuaikan nama file PHP-mu
+      final url = Uri.parse('$baseUrl/booking/get_slots.php'); 
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         if (jsonData['success'] == true) {
-          // Mengonversi data JSON list menjadi List<String> di Dart
           return List<String>.from(jsonData['data']);
         }
       }
