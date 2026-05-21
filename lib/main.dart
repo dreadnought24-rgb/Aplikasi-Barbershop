@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // Halaman pertama
-      home: const BookingScreen(),
+      home: const BookingScreen(),//thariq
     );
   }
 }

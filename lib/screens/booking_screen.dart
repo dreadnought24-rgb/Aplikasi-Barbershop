@@ -1,170 +1,127 @@
-// =========================
-// IMPORT
-// =========================
 import 'package:flutter/material.dart';
-
 import '../models/barber_model.dart';
 import '../services/barber_service.dart';
 import '../services/booking_service.dart';
-
 import 'package:flutter_application_1/controllers/booking_controller.dart';
 
-// =========================
-// BOOKING SCREEN
-// FOKUS KE ALUR DATA
-// =========================
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
 
   @override
-  State<BookingScreen> createState() =>
-      _BookingScreenState();
+  State<BookingScreen> createState() => _BookingScreenState();
 }
 
-class _BookingScreenState
-    extends State<BookingScreen> {
+class _BookingScreenState extends State<BookingScreen> {
+  final BookingController _controller = BookingController();
 
-  // =========================
-  // CONTROLLER BOOKING
-  // MENGATUR PROSES BOOKING
-  // =========================
-  final BookingController _controller =
-      BookingController();
+  final dateController = TextEditingController();
+  final timeController = TextEditingController();
+  final jumlahController = TextEditingController();
 
-  // =========================
-  // INPUT DATA USER
-  // =========================
-  final dateController =
-      TextEditingController();
-
-  final timeController =
-      TextEditingController();
-
-  final jumlahController =
-      TextEditingController();
-
-  // =========================
-  // MENYIMPAN DATA BARBER
-  // DARI DATABASE / API
-  // =========================
   List<BarberModel> barberList = [];
-
-  // =========================
-  // MENYIMPAN SLOT TERSEDIA
-  // DARI DATABASE / API
-  // =========================
   List<String> slotList = [];
+  bool isLoadingSubmit = false;
 
-  // =========================
-  // DIJALANKAN SAAT HALAMAN
-  // PERTAMA DIBUKA
-  // =========================
   @override
   void initState() {
     super.initState();
-
-    // Ambil data barber
     getBarber();
-
-    // Ambil slot booking
     getSlot();
   }
 
-  // =========================
-  // FUNCTION AMBIL BARBER
-  // DARI SERVICE
-  // =========================
   Future<void> getBarber() async {
-
-    // Request data barber
-    final data =
-        await BarberService.getBarber();
-
-    // Simpan ke list
+    final data = await BarberService.getBarber();
     setState(() {
       barberList = data;
     });
   }
 
-  // =========================
-  // FUNCTION AMBIL SLOT
-  // DARI SERVICE
-  // =========================
   Future<void> getSlot() async {
-
-    // Request slot tersedia
-    final data =
-        await BookingService
-            .getAvailableSlots(
-      '2026-05-21',
-    );
-
-    // Simpan ke list
+    final data = await BookingService.getAvailableSlots();
     setState(() {
       slotList = data;
     });
   }
 
-  // =========================
-  // FUNCTION CREATE BOOKING
-  // MENGIRIM DATA KE API
-  // =========================
   Future<void> submitBooking() async {
+    setState(() {
+      isLoadingSubmit = true;
+    });
 
-    await _controller.createBooking(
-
-      // ID USER
-      userId: "1",
-
-      // ID BARBER / PENCUKUR
-      pencukurId: "2",
-
-      // TANGGAL BOOKING
-      bookingDate:
-          dateController.text,
-
-      // JAM BOOKING
-      bookingTime:
-          timeController.text,
-
-      // JUMLAH ORANG
-      jumlahOrang:
-          jumlahController.text,
+    // Mengirim data dari inputan form
+    bool isSuccess = await _controller.createBooking(
+      userId: "1", // Sementara hardcode, nanti bisa ambil dari session login
+      pencukurId: "2", // Sementara hardcode, nanti bisa diambil dari pilihan barberList
+      bookingDate: dateController.text,
+      bookingTime: timeController.text,
+      jumlahOrang: jumlahController.text,
     );
 
-    // =========================
-    // HASIL RESPONSE
-    // DARI DATABASE / API
-    // =========================
-    print(
-      _controller.statusMessage,
+    setState(() {
+      isLoadingSubmit = false;
+    });
+
+    // Menampilkan pesan response dari server PHP menggunakan SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(_controller.statusMessage)),
     );
+
+    if (isSuccess) {
+      // Jika sukses, kamu bisa kosongkan form atau pindah halaman
+      dateController.clear();
+      timeController.clear();
+      jumlahController.clear();
+    }
   }
 
-  // =========================
-  // HAPUS CONTROLLER
-  // AGAR TIDAK MEMORY LEAK
-  // =========================
   @override
   void dispose() {
-
     dateController.dispose();
     timeController.dispose();
     jumlahController.dispose();
-
     super.dispose();
   }
 
-  // =========================
-  // UI SEMENTARA
-  // =========================
   @override
   Widget build(BuildContext context) {
-
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Fokus Alur Data',
+    return Scaffold(
+      appBar: AppBar(title: const Text('Form Booking Barbershop')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            TextField(
+              controller: dateController,
+              decoration: const InputDecoration(
+                labelText: "Tanggal (YYYY-MM-DD)",
+                hintText: "Contoh: 2026-05-25",
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(
+                labelText: "Jam (HH:MM)",
+                hintText: "Contoh: 14:00",
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: jumlahController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Jumlah Orang",
+                hintText: "Contoh: 1",
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: isLoadingSubmit ? null : submitBooking,
+              child: isLoadingSubmit
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Pesan Sekarang'),
+            ),
+          ],
         ),
       ),
     );

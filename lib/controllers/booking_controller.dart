@@ -1,16 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/booking_service.dart';
 import 'package:flutter_application_1/models/booking_model.dart';
 
-class BookingController extends ChangeNotifier {
-  final BookingService _service = BookingService();
-
-  bool isLoading = false;
+class BookingController {
   String statusMessage = "";
-  int? nomorAntrean;
+  bool isLoading = false;
 
-  // Nama fungsi diubah menjadi createBooking agar cocok dengan lib/screens/booking_screen.dart kamu
-  Future<void> createBooking({
+  Future<bool> createBooking({
     required String userId,
     required String pencukurId,
     required String bookingDate,
@@ -18,12 +13,9 @@ class BookingController extends ChangeNotifier {
     required String jumlahOrang,
   }) async {
     isLoading = true;
-    statusMessage = "Mengirim booking ke database...";
-    nomorAntrean = null;
-    notifyListeners();
-
-    // Memanggil service untuk kirim data ke backend PHP
-    BookingResponse response = await _service.kirimBooking(
+    
+    // Memanggil fungsi static dari BookingService
+    BookingResponse response = await BookingService.kirimBooking(
       userId: userId,
       pencukurId: pencukurId,
       bookingDate: bookingDate,
@@ -31,16 +23,9 @@ class BookingController extends ChangeNotifier {
       jumlahOrang: jumlahOrang,
     );
 
+    statusMessage = response.message;
     isLoading = false;
-
-    if (response.success) {
-      nomorAntrean = response.queueNumber;
-      statusMessage =
-          "Sukses! ${response.message}. Nomor Queue Anda: $nomorAntrean";
-    } else {
-      statusMessage = "Gagal: ${response.message}";
-    }
-
-    notifyListeners();
+    
+    return response.success;
   }
 }
