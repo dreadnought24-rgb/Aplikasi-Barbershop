@@ -24,5 +24,5 @@ class MyApp extends StatelessWidget {
       // Halaman pertama
       home: const BookingScreen(),//thariq
     );
-  }
+  }//hallo
 }
