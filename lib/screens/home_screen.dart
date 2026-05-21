@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'booking_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,13 +7,18 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home"),
-      ), // Menampilkan AppBar dengan judul "Home"
-      body: const Center(
-        child: Text(
-          "Login Berhasil", // Menampilkan pesan "Login Berhasil" di tengah layar
+      appBar: AppBar(title: const Text('Home')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BookingScreen()),
+            );
+          },
+          child: const Text('Booking Sekarang'),
         ),
+        
       ),
     );
   }
