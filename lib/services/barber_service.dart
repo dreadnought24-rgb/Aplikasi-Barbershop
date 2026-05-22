@@ -1,42 +1,38 @@
-// Untuk mengubah JSON
 import 'dart:convert';
-
-// Package HTTP
 import 'package:http/http.dart' as http;
-
-// Import model barber
 import '../models/barber_model.dart';
 
 class BarberService {
 
-  // Function mengambil data barber
+  static const String baseUrl =
+      "http://192.168.1.28/barbershop_api";
+
   static Future<List<BarberModel>> getBarber() async {
 
-    // URL sudah disesuaikan ke sub-folder barber/get_barbers.php
-    final response = await http.get(
+    final url =
+        Uri.parse('$baseUrl/barber/get_barbers.php');
 
-      Uri.parse(
+    print("URL: $url");
 
-        'http://192.168.1.15/barbershop/barber.php',
-      ),
-    );
+    final response = await http.get(url);
 
-    // Jika request berhasil
+    print("STATUS CODE: ${response.statusCode}");
+    print("BODY: ${response.body}");
+
     if (response.statusCode == 200) {
 
-      // Decode JSON menjadi List
       List data = jsonDecode(response.body);
 
-      // Mengubah List JSON menjadi List BarberModel
       return data
           .map((e) => BarberModel.fromJson(e))
           .toList();
 
     } else {
 
-      // Jika gagal
       throw Exception(
-        'Gagal mengambil data barber',
+        'Gagal mengambil data barber\n'
+        'Status: ${response.statusCode}\n'
+        'Body: ${response.body}',
       );
     }
   }

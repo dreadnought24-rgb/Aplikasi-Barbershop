@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/booking_model.dart';
 
 class BookingService {
-
-static const String baseUrl = "http://192.168.1.15/php_barbershop";
+  static const String baseUrl = "http://192.168.1.28/barbershop_api";
+  // static const String baseUrl = "http://localhost/php_barbershop";
 
   // 1. Fungsi untuk mengirim data Booking (POST)
   static Future<BookingResponse> kirimBooking({
@@ -15,16 +15,18 @@ static const String baseUrl = "http://192.168.1.15/php_barbershop";
     required String jumlahOrang,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/booking/create_booking.php'),
-        body: {
-          'user_id': userId,
-          'pencukur_id': pencukurId,
-          'booking_date': bookingDate,
-          'booking_time': bookingTime,
-          'jumlah_orang': jumlahOrang,
-        },
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/booking/create_booking.php'),
+            body: {
+              'user_id': userId,
+              'pencukur_id': pencukurId,
+              'booking_date': bookingDate,
+              'booking_time': bookingTime,
+              'jumlah_orang': jumlahOrang,
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decodedData = json.decode(response.body);
@@ -45,33 +47,65 @@ static const String baseUrl = "http://192.168.1.15/php_barbershop";
 
   // 2. Fungsi untuk mengambil data Booking (GET)
   static Future<BookingModel?> getBooking(int userId) async {
-    try {
-      final url = Uri.parse('$baseUrl/booking/get_user_booking.php?user_id=$userId');
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+  try {
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true) {
-          return BookingModel.fromJson(jsonData['data']);
-        }
+    final url = Uri.parse(
+      '$baseUrl/booking/get_user_booking.php?user_id=$userId',
+    );
+
+    print("GET BOOKING URL: $url");
+
+    final response =
+        await http.get(url).timeout(const Duration(seconds: 5));
+
+    print("STATUS CODE: ${response.statusCode}");
+    print("BODY: ${response.body}");
+
+    if (response.statusCode == 200) {
+
+      final jsonData = jsonDecode(response.body);
+
+      print("JSON DATA: $jsonData");
+
+      if (jsonData['success'] == true) {
+
+        return BookingModel.fromJson(jsonData['data']);
+
+      } else {
+
+        print("BOOKING TIDAK DITEMUKAN DARI PHP");
+
       }
-      return null;
-    } catch (e) {
-      return null;
     }
+
+    return null;
+
+  } catch (e) {
+
+    print("ERROR GET BOOKING: $e");
+
+    return null;
   }
+}
 
   // 3. Fungsi untuk mengambil data slot waktu (GET)
-  static Future<List<String>> getAvailableSlots() async {
+  // Ubah fungsi getAvailableSlots agar menerima parameter tanggal dan id_pencukur
+  static Future<List<String>> getAvailableSlots({
+    required String tanggal,
+    required String idPencukur,
+  }) async {
     try {
-      final url = Uri.parse('$baseUrl/booking/get_slots.php'); 
+      // Memanggil check_slot.php sambil mengirim query parameter (?tanggal=...&id_pencukur=...)
+      final url = Uri.parse(
+        '$baseUrl/booking/check_slot.php?tanggal=$tanggal&id_pencukur=$idPencukur',
+      );
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true) {
-          return List<String>.from(jsonData['data']);
-        }
+        // Karena check_slot.php langsung mengembalikan Array JSON (contoh: ["09.00", "11.00"])
+        // Kita langsung decode sebagai List<String>
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        return List<String>.from(jsonData);
       }
       return [];
     } catch (e) {

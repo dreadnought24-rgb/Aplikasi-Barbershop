@@ -38,7 +38,8 @@ class BookingResponse {
   factory BookingResponse.fromJson(Map<String, dynamic> json) {
     return BookingResponse(
       success: json['success'] ?? false,
-      queueNumber: json['queue_number'],
+      // Konversi aman: pastikan data dicasting ke int secara eksplisit
+      queueNumber: json['queue_number'] != null ? int.parse(json['queue_number'].toString()) : null,
       message: json['message'] ?? '',
     );
   }

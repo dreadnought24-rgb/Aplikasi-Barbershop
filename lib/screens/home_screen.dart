@@ -7,14 +7,29 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Berpindah ke form booking menggunakan Named Route terdaftar
-            Navigator.pushNamed(context, AppRoutes.booking);
-          },
-          child: const Text('Booking Sekarang'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Selamat Datang di Barbershop",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15)),
+              onPressed: () {
+                // Navigasi dari Home ke Booking
+                // Kita juga bisa melempar ID Barber yang dipilih user secara dinamis (Contoh: ID "1")
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.booking,
+                  arguments: "1",
+                );
+              },
+              child: const Text("Pesan Barbershop Sekarang", style: TextStyle(fontSize: 16)),
+            ),
+          ],
         ),
       ),
     );

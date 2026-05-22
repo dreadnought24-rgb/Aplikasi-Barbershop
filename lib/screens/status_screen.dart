@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/booking_model.dart';
 import '../services/booking_service.dart';
-import '../config/routes.dart'; 
+import '../config/routes.dart';
 
 class StatusScreen extends StatefulWidget {
   const StatusScreen({super.key});
@@ -33,64 +33,60 @@ class _StatusScreenState extends State<StatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Status Booking"),
-      ),
+      appBar: AppBar(title: const Text("Status Booking")),
       body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : booking == null
-              ? const Center(
-                  child: Text("Booking tidak ditemukan"),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Barber : ${booking!.barber}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Tanggal : ${booking!.date}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Jam : ${booking!.time}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Queue : ${booking!.queue}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "Status : ${booking!.status}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 40),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Kembali ke Home dan menghapus tumpukan screen di belakangnya
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              AppRoutes.home,
-                              (route) => false,
-                            );
-                          },
-                          child: const Text("Kembali ke Home"),
-                        ),
-                      ),
-                    ],
+          ? const Center(child: Text("Booking tidak ditemukan"))
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Barber : ${booking!.barber}",
+                    style: const TextStyle(fontSize: 20),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Tanggal : ${booking!.date}",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Jam : ${booking!.time}",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Queue : ${booking!.queue}",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Status : ${booking!.status}",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Ubah AppRoutes.home menjadi AppRoutes.mainNav agar
+                        // BottomNavigationBar di halaman utama tetap ikut muncul.
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes
+                              .mainNav, // Mengarahkan ke kontainer navigasi utama
+                          (route) => false,
+                        );
+                      },
+                      child: const Text("Kembali ke Home"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

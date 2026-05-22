@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/booking_screen.dart';
 import 'config/routes.dart';
 
 void main() {
-  runApp(
-    const MyApp(),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -15,12 +12,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
-      // Halaman pertama saat aplikasi baru dibuka
-      home: const BookingScreen(), 
-      
-      // Integrasi map rute navigasi aplikasi
+      // Menggunakan initialRoute untuk menentukan halaman pertama (Login)
+      initialRoute: AppRoutes.login,
       routes: AppRoutes.getRoutes(),
     );
-  } 
+  }
 }
