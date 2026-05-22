@@ -3,13 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/booking_model.dart';
 
 class BookingService {
-<<<<<<< HEAD
-  // Sudah sesuai dengan nama folder di htdocs kamu
-  static const String baseUrl = "http://localhost/php_barbershop";
-=======
-  // IP 10.0.2.2 untuk emulator Android lokal ke PC
-  static const String baseUrl = "http://192.168.1.15/php_barbershop";
->>>>>>> 733c0e1947b42dfd133df0034f5f3b50d48af4fb
+
+static const String baseUrl = "http://192.168.1.15/php_barbershop";
 
   // 1. Fungsi untuk mengirim data Booking (POST)
   static Future<BookingResponse> kirimBooking({
