@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/booking_model.dart';
 
 class BookingService {
-  static const String baseUrl = "http://192.168.1.28/barbershop_api";
+  static const String baseUrl = "http://192.168.1.6/barbershop_api";
   // static const String baseUrl = "http://localhost/php_barbershop";
 
   // 1. Fungsi untuk mengirim data Booking (POST)
