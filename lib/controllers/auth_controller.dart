@@ -1,0 +1,27 @@
+import '../services/auth_service.dart';
+import '../utils/session_helper.dart';
+
+class AuthController {
+
+  static Future<Map<String, dynamic>> login({
+    required String username,
+    required String password,
+  }) async {
+
+    final result = await AuthService.login(
+      username: username,
+      password: password,
+    );
+
+    if (result['success'] == true) {
+
+      await SessionHelper.saveSession(
+        userId: result['user_id'],
+        role: result['role'],
+      );
+
+    }
+
+    return result;
+  }
+}
