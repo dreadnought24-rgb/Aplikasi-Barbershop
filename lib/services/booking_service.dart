@@ -112,4 +112,36 @@ class BookingService {
       return [];
     }
   }
+  // 4. Ambil semua booking untuk admin
+  static Future<List<BookingModel>> getAllBookings() async {
+
+    try {
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/admin/get_all_bookings.php'),
+      ).timeout(const Duration(seconds: 5));
+
+      if(response.statusCode == 200){
+
+        final jsonData = jsonDecode(response.body);
+
+        if(jsonData['success'] == true){
+
+          List data = jsonData['data'];
+
+          return data
+              .map((item) => BookingModel.fromJson(item))
+              .toList();
+        }
+      }
+
+      return [];
+
+    } catch (e) {
+
+      print("ERROR GET ALL BOOKINGS: $e");
+
+      return [];
+    }
+  }
 }
