@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 class AdminService {
 
   static const String baseUrl =
-      "http://192.168.1.6/barbershop_api";
+      "http://192.168.1.39/barbershop_api";
 
   static Future<bool> updateBookingStatus({
     required String bookingId,
-    required String status,
+    required String status,//cek lagi
   }) async {
 
     try {
@@ -20,8 +20,8 @@ class AdminService {
         ),
 
         body: {
-          'booking_id': bookingId,
-          'status': status,
+          // 'booking_id': bookingId,
+          // 'status': status,
         },
 
       ).timeout(const Duration(seconds: 5));

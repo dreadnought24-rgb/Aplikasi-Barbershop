@@ -5,7 +5,7 @@ import '../models/barber_model.dart';
 class BarberService {
 
   static const String baseUrl =
-      "http://192.168.1.6/barbershop_api";
+      "http://192.168.1.39/barbershop_api";
 
   static Future<List<BarberModel>> getBarber() async {
 

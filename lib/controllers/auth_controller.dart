@@ -16,7 +16,7 @@ class AuthController {
     if (result['success'] == true) {
 
       await SessionHelper.saveSession(
-        userId: result['user_id'],
+        userId: result['id'],//harus id karena dari database
         role: result['role'],
       );
 
