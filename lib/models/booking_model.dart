@@ -1,4 +1,6 @@
 class BookingModel {
+
+  final String bookingId;
   final String barber;
   final String date;
   final String time;
@@ -6,6 +8,7 @@ class BookingModel {
   final String status;
 
   BookingModel({
+    required this.bookingId,
     required this.barber,
     required this.date,
     required this.time,
@@ -14,17 +17,22 @@ class BookingModel {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+
     return BookingModel(
+
+      bookingId: json['booking_id'].toString(),
       barber: json['nama_pencukur'] ?? '',
       date: json['booking_date'] ?? '',
       time: json['booking_time'] ?? '',
       queue: json['queue_number'].toString(),
       status: json['status'] ?? '',
+
     );
   }
 }
 
 class BookingResponse {
+
   final bool success;
   final int? queueNumber;
   final String message;
@@ -35,12 +43,23 @@ class BookingResponse {
     required this.message,
   });
 
-  factory BookingResponse.fromJson(Map<String, dynamic> json) {
+  factory BookingResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+
     return BookingResponse(
+
       success: json['success'] ?? false,
-      // Konversi aman: pastikan data dicasting ke int secara eksplisit
-      queueNumber: json['queue_number'] != null ? int.parse(json['queue_number'].toString()) : null,
+
+      queueNumber:
+          json['queue_number'] != null
+              ? int.parse(
+                  json['queue_number'].toString(),
+                )
+              : null,
+
       message: json['message'] ?? '',
+
     );
   }
 }

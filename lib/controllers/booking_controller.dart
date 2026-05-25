@@ -28,4 +28,7 @@ class BookingController {
     
     return response.success;
   }
+  Future<List<BookingModel>> getAllBookings() async {
+    return await BookingService.getAllBookings();
+  }
 }
