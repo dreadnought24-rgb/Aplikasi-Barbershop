@@ -13,8 +13,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // Menggunakan initialRoute untuk menentukan halaman pertama (Login)
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.splash, // Ganti dengan AppRoutes.login jika ingin langsung ke Login
       routes: AppRoutes.getRoutes(),
     );
   }
 }
+
