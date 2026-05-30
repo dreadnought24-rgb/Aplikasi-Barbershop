@@ -1,29 +1,24 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/barber_model.dart';
 
 class AdminService {
-
-static const String baseUrl ="http://192.168.1.39/barbershop_api";
+  static const String baseUrl = "http://192.168.1.39/barbershop_api";
 
   // Fungsi Update Status - Menggunakan key 'id' sesuai kolom DB
-static Future<bool> updateBookingStatus({
+  static Future<bool> updateBookingStatus({
     required String id,
     required String status,
-}) async {
+  }) async {
     try {
-    final response = await http.post(
-        Uri.parse(
-          '$baseUrl/admin/update_booking_status.php',
-        ),
-        body: {
-          'id': id,
-          'status': status,
-        },
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/admin/update_booking_status.php'),
+            body: {'id': id, 'status': status},
+          )
+          .timeout(const Duration(seconds: 5));
 
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return jsonData['success'] == true;
       }
@@ -78,4 +73,3 @@ static Future<bool> updateBookingStatus({
     }
   }
 }
-

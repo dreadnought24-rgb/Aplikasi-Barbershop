@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/admin_screen.dart';
-import '../services/auth_service.dart';
+import 'package:flutter_application_1/utils/session_helper.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import '../controllers/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = true;
     });
 
-    final result = await AuthService.login(
+    final result = await AuthController.login(
       username: usernameController.text,
       password: passwordController.text,
     );
@@ -32,36 +33,35 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (result['success'] == true) {
+      //t
 
-  String role = result['role'];
+      String? role = await SessionHelper.getRole();
 
-  if (role == 'admin') {
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminScreen()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const AdminScreen(),//belum dibuat tampilan
-      ),
-    );
-
-  } else {
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const HomeScreen(),
-      ),
-    );
-
+      //t
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result['message'])));
+    }
   }
 
-} else {
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(result['message'])),
-  );
-
-}
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
