@@ -9,8 +9,8 @@ class BarberModel {
 
   factory BarberModel.fromJson(Map<String, dynamic> json) {
     return BarberModel(
-      // PASTIKAN key di dalam json['...'] ini sama persis dengan nama kolom di database!
-      id: (json['id'] ?? json['id_pencukur'] ?? '').toString(),
+      // Mengakomodasi key 'id', 'pencukur_id', atau 'id_pencukur' dan dipaksa menjadi String
+      id: (json['id'] ?? json['pencukur_id'] ?? json['id_pencukur'] ?? '').toString(),
       nama: json['nama_pencukur'] ?? json['nama'] ?? 'Tanpa Nama',
     );
   }
