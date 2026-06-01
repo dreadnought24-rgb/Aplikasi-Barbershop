@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/barber_model.dart';
+import '../config/api_config.dart';
 
 class AdminService {
-  static const String baseUrl = "http://192.168.1.39/barbershop_api";
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // Fungsi Update Status - Menggunakan key 'id' sesuai kolom DB
   static Future<bool> updateBookingStatus({
@@ -60,7 +61,7 @@ class AdminService {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (data['success'] == true) {
-          return data['bookings'];
+          return data['data'];
         } else {
           print("Pesan Server: ${data['message']}");
           return [];

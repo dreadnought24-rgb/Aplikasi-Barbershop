@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/booking_model.dart';
+import '../config/api_config.dart';
 
 class BookingService {
-  static const String baseUrl = "http://192.168.1.39/barbershop_api";
-  // static const String baseUrl = "http://localhost/php_barbershop";
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // 1. Fungsi untuk mengirim data Booking (POST)
   static Future<BookingResponse> kirimBooking({
@@ -47,46 +47,37 @@ class BookingService {
 
   // 2. Fungsi untuk mengambil data Booking (GET)
   static Future<BookingModel?> getBooking(int userId) async {
-  try {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/booking/get_user_booking.php?user_id=$userId',
+      );
 
-    final url = Uri.parse(
-      '$baseUrl/booking/get_user_booking.php?user_id=$userId',
-    );
+      print("GET BOOKING URL: $url");
 
-    print("GET BOOKING URL: $url");
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
 
-    final response =
-        await http.get(url).timeout(const Duration(seconds: 5));
+      print("STATUS CODE: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-    print("STATUS CODE: ${response.statusCode}");
-    print("BODY: ${response.body}");
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
+        print("JSON DATA: $jsonData");
 
-      final jsonData = jsonDecode(response.body);
-
-      print("JSON DATA: $jsonData");
-
-      if (jsonData['success'] == true) {
-
-        return BookingModel.fromJson(jsonData['data']);
-
-      } else {
-
-        print("BOOKING TIDAK DITEMUKAN DARI PHP");
-
+        if (jsonData['success'] == true) {
+          return BookingModel.fromJson(jsonData['data']);
+        } else {
+          print("BOOKING TIDAK DITEMUKAN DARI PHP");
+        }
       }
+
+      return null;
+    } catch (e) {
+      print("ERROR GET BOOKING: $e");
+
+      return null;
     }
-
-    return null;
-
-  } catch (e) {
-
-    print("ERROR GET BOOKING: $e");
-
-    return null;
   }
-}
 
   // 3. Fungsi untuk mengambil data slot waktu (GET)
   // Ubah fungsi getAvailableSlots agar menerima parameter tanggal dan id_pencukur
@@ -112,33 +103,26 @@ class BookingService {
       return [];
     }
   }
+
   // 4. Ambil semua booking untuk admin
   static Future<List<BookingModel>> getAllBookings() async {
-
     try {
+      final response = await http
+          .get(Uri.parse('$baseUrl/admin/get_all_bookings.php'))
+          .timeout(const Duration(seconds: 5));
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/admin/get_all_bookings.php'),
-      ).timeout(const Duration(seconds: 5));
-
-      if(response.statusCode == 200){
-
+      if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
 
-        if(jsonData['success'] == true){
-
+        if (jsonData['success'] == true) {
           List data = jsonData['data'];
 
-          return data
-              .map((item) => BookingModel.fromJson(item))
-              .toList();
+          return data.map((item) => BookingModel.fromJson(item)).toList();
         }
       }
 
       return [];
-
     } catch (e) {
-
       print("ERROR GET ALL BOOKINGS: $e");
 
       return [];

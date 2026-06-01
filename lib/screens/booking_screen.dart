@@ -65,10 +65,34 @@ class _BookingScreenState extends State<BookingScreen> {
     });
   }
 
+  String _formatBookingTime(String time) {
+    final normalized = time.trim().replaceAll('.', ':');
+    if (normalized.isEmpty) {
+      return '';
+    }
+    if (normalized.length == 8) {
+      return normalized;
+    }
+    if (normalized.length == 5 && normalized.contains(':')) {
+      return '$normalized:00';
+    }
+    return normalized;
+  }
+
   Future<void> submitBooking() async {
     if (selectedBarberId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Silakan pilih barber terlebih dahulu!")),
+      );
+      return;
+    }
+
+    final rawBookingTime = timeController.text.trim();
+    if (rawBookingTime.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Silakan isi jam booking terlebih dahulu!"),
+        ),
       );
       return;
     }
@@ -82,7 +106,9 @@ class _BookingScreenState extends State<BookingScreen> {
       userId: "1", // Sementara hardcode ID User login
       pencukurId: selectedBarberId!, // Dinamis
       bookingDate: dateController.text, // Dinamis
-      bookingTime: timeController.text, // Dinamis
+      bookingTime: _formatBookingTime(
+        rawBookingTime,
+      ), // Dinamis dan disesuaikan PHP
       jumlahOrang: jumlahController.text, // Dinamis
     );
 
@@ -124,7 +150,10 @@ class _BookingScreenState extends State<BookingScreen> {
         child: ListView(
           children: [
             // 1. DROPDOWN PILIH BARBER (TUGAS 1)
-            const Text("Pilih Barber:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              "Pilih Barber:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: selectedBarberId,
@@ -161,33 +190,40 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(height: 16),
 
-            // 3. TAMPILAN SLOT YANG TERSEDIA (INFORMASI DARI TUGAS 1 & TUGAS 2)
+            // 3. SLOT YANG TERSEDIA HANYA SEBAGAI REFERENSI
             if (slotList.isNotEmpty) ...[
-              const Text("Slot Tersedia Hari Ini:", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Slot Tersedia Hari Ini:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: slotList.map((slot) {
-                  return ChoiceChip(
-                    label: Text(slot),
-                    selected: timeController.text == slot,
-                    onSelected: (selected) {
-                      setState(() {
-                        timeController.text = selected ? slot : "";
-                      });
-                    },
-                  );
-                }).toList(),
+                runSpacing: 8,
+                children: slotList
+                    .map(
+                      (slot) => Chip(
+                        label: Text(slot),
+                        backgroundColor: Colors.grey.shade200,
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              const Text(
+                "Belum ada slot tersedia untuk barber dan tanggal ini.",
+                style: TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 16),
             ],
 
-            // 4. INPUT JAM MANUAL (Jika tidak memilih dari Chip diatas)
+            // 4. INPUT JAM BOOKING BEBAS
             TextField(
               controller: timeController,
               decoration: const InputDecoration(
-                labelText: "Jam (HH:MM)",
-                hintText: "Contoh: 10.00",
+                labelText: "Jam Booking",
+                hintText: "Contoh: 10.00 atau 10:00",
                 border: OutlineInputBorder(),
               ),
             ),
@@ -207,15 +243,23 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // 6. TOMBOL SUBMIT (TUGAS 2 & 4)
             ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               onPressed: isLoadingSubmit ? null : submitBooking,
               child: isLoadingSubmit
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
-                  : const Text('Pesan Sekarang', style: TextStyle(fontSize: 16)),
+                  : const Text(
+                      'Pesan Sekarang',
+                      style: TextStyle(fontSize: 16),
+                    ),
             ),
           ],
         ),

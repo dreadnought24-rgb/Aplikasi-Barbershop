@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/admin_screen.dart';
-import 'package:flutter_application_1/utils/session_helper.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
-import '../controllers/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,45 +13,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-  bool isLoading = false;
-
-  void login() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    final result = await AuthController.login(
-      username: usernameController.text,
-      password: passwordController.text,
+  void login() {
+    // Catatan: bagian login ini dibypass, tidak cek database.
+    // Tombol Login langsung membawa user ke HomeScreen.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (result['success'] == true) {
-      //t
-
-      String? role = await SessionHelper.getRole();
-
-      if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
-
-      //t
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result['message'])));
-    }
   }
 
   @override
@@ -87,12 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 30),
 
-            ElevatedButton(
-              onPressed: isLoading ? null : login,
-              child: isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("Login"),
-            ),
+            ElevatedButton(onPressed: login, child: const Text("Login")),
 
             TextButton(
               onPressed: () {
