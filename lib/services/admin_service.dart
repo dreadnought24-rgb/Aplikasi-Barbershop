@@ -34,7 +34,7 @@ class AdminService {
   static Future<BarberModel?> getBarberData(int userId) async {
     try {
       var url = Uri.parse('$baseUrl/admin/get_barber_data.php');
-      var response = await http.post(url, body: {'user_id': userId.toString()});
+      var response = await http.post(url, body: {'user_id': userId.toString()});//user_id?
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);

@@ -17,7 +17,12 @@ class BookingModel {
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
+<<<<<<< HEAD
       bookingId: (json['booking_id'] ?? json['id'] ?? '').toString(),
+=======
+
+      bookingId: json['booking_id'].toString(),//booking_id?
+>>>>>>> 8739a2ba6529c983cfe42196b0fe71bf8d5474d9
       barber: json['nama_pencukur'] ?? '',
       date: json['booking_date'] ?? '',
       time: json['booking_time'] ?? '',
