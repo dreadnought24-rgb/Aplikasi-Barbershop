@@ -15,18 +15,20 @@ class AppRoutes {
   static const String status = '/status';
   static const String admin = '/admin';
   static const String splash = '/splash';
-  
+
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       login: (context) => const LoginScreen(),
       splash: (context) => const SplashLogo(),
-      admin:(context) => const AdminScreen(),
+      admin: (context) {
+        final args = ModalRoute.of(context)?.settings.arguments;
+        final adminUserId = args is int ? args : 0;
+        return AdminScreen(adminUserId: adminUserId);
+      },
       mainNav: (context) => const MainNavigation(),
       home: (context) => const HomeScreen(),
       booking: (context) => const BookingScreen(),
       status: (context) => const StatusScreen(),
     };
   }
-
-
 }

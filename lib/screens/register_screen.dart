@@ -7,13 +7,10 @@ class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() =>
-      _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState
-    extends State<RegisterScreen> {
-
+class _RegisterScreenState extends State<RegisterScreen> {
   final namaController = TextEditingController();
   final usernameController = TextEditingController();
   final noHpController = TextEditingController();
@@ -22,20 +19,14 @@ class _RegisterScreenState
   bool isLoading = false;
 
   void register() async {
-
     // validasi kosong
     if (namaController.text.isEmpty ||
         usernameController.text.isEmpty ||
         noHpController.text.isEmpty ||
         passwordController.text.isEmpty) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Semua field harus diisi",
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Semua field harus diisi")));
 
       return;
     }
@@ -55,66 +46,46 @@ class _RegisterScreenState
       isLoading = false;
     });
 
+    if (!mounted) return;
+
     // jika berhasil
     if (result['success'] == true) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result['message'])));
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
-
     } else {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-        ),
-      );
-
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result['message'])));
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
-      appBar: AppBar(
-        title: const Text("Register"),
-      ),
+      appBar: AppBar(title: const Text("Register")),
 
       body: Padding(
         padding: const EdgeInsets.all(20),
 
         child: SingleChildScrollView(
-
           child: Column(
-
             children: [
-
               TextField(
                 controller: namaController,
-                decoration: const InputDecoration(
-                  labelText: "Nama",
-                ),
+                decoration: const InputDecoration(labelText: "Nama"),
               ),
 
               const SizedBox(height: 20),
 
               TextField(
                 controller: usernameController,
-                decoration: const InputDecoration(
-                  labelText: "Username",
-                ),
+                decoration: const InputDecoration(labelText: "Username"),
               ),
 
               const SizedBox(height: 20),
@@ -122,9 +93,7 @@ class _RegisterScreenState
               TextField(
                 controller: noHpController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: "No HP",
-                ),
+                decoration: const InputDecoration(labelText: "No HP"),
               ),
 
               const SizedBox(height: 20),
@@ -132,9 +101,7 @@ class _RegisterScreenState
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                ),
+                decoration: const InputDecoration(labelText: "Password"),
               ),
 
               const SizedBox(height: 30),
@@ -143,9 +110,7 @@ class _RegisterScreenState
                 width: double.infinity,
 
                 child: ElevatedButton(
-
-                  onPressed:
-                  isLoading ? null : register,
+                  onPressed: isLoading ? null : register,
 
                   child: isLoading
                       ? const CircularProgressIndicator()
@@ -156,24 +121,15 @@ class _RegisterScreenState
               const SizedBox(height: 20),
 
               TextButton(
-
                 onPressed: () {
-
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                      const LoginScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
                   );
-
                 },
 
-                child: const Text(
-                  "Sudah punya akun? Login",
-                ),
-              )
-
+                child: const Text("Sudah punya akun? Login"),
+              ),
             ],
           ),
         ),

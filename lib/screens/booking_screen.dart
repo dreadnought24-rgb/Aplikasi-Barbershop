@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/barber_model.dart';
 import '../services/barber_service.dart';
 import '../services/booking_service.dart';
@@ -22,120 +23,154 @@ class _BookingScreenState extends State<BookingScreen> {
 
   List<BarberModel> barberList = [];
   List<String> slotList = [];
-  bool isLoadingSubmit = false;
-
-  // Variabel baru untuk menampung Barber ID yang dipilih user
   String? selectedBarberId;
+  String? selectedSlot;
+  DateTime? selectedDate;
+  bool isLoadingBarber = true;
+  bool isLoadingSlot = false;
+  bool isLoadingSubmit = false;
+  int _userId = 0;
 
   @override
   void initState() {
     super.initState();
-    getBarber();
+    _init();
   }
 
-// mengambil barber
-  Future<void> getBarber() async {        
+  Future<void> _init() async {
+    // Baca user_id dari SharedPreferences yang disimpan saat login
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getInt('user_id') ?? 0;
+
+    if (_userId == 0 && mounted) {
+      // Belum login, redirect ke login
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      return;
+    }
 
     try {
       final data = await BarberService.getBarber();
+      if (!mounted) return;
       setState(() {
         barberList = data;
-        // Set default pilihan barber ke yang pertama jika data tersedia
-        if (barberList.isNotEmpty) {
-          selectedBarberId = barberList.first.id;
-        }
+        selectedBarberId = barberList.isNotEmpty ? barberList.first.id : null;
+        isLoadingBarber = false;
       });
-      // Panggil slot pertama kali setelah barber didapatkan
-      getSlot();
     } catch (e) {
-      debugPrint("Gagal mengambil barber: $e");
+      if (!mounted) return;
+      setState(() => isLoadingBarber = false);
+      _snack('Gagal memuat daftar barber: $e', isError: true);
     }
   }
 
-//mengambil slot jam dengan syarat barber dan tanggal sudah diisi
-  Future<void> getSlot() async {
-    // Validasi: Hanya panggil API jika tanggal sudah diisi dan barber sudah dipilih
-    if (dateController.text.isEmpty || selectedBarberId == null) {
-      return;
-    }
+  Future<void> _loadSlots() async {
+    if (selectedDate == null || selectedBarberId == null) return;
+    setState(() {
+      isLoadingSlot = true;
+      selectedSlot = null;
+      slotList = [];
+    });
 
     final data = await BookingService.getAvailableSlots(
-      tanggal: dateController.text, // Sekarang Dinamis dari inputan user
-      idPencukur: selectedBarberId!, // Sekarang Dinamis dari dropdown pencukur
+      tanggal: _dateForApi(selectedDate!),
+      idPencukur: selectedBarberId!,
     );
 
+    if (!mounted) return;
     setState(() {
       slotList = data;
+      isLoadingSlot = false;
     });
   }
 
-  String _formatBookingTime(String time) {
-    final normalized = time.trim().replaceAll('.', ':');
-    if (normalized.isEmpty) {
-      return '';
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 30)),
+      helpText: 'Pilih tanggal booking',
+    );
+    if (date != null && mounted) {
+      setState(() => selectedDate = date);
+      await _loadSlots();
     }
-    if (normalized.length == 8) {
-      return normalized;
-    }
-    if (normalized.length == 5 && normalized.contains(':')) {
-      return '$normalized:00';
-    }
-    return normalized;
   }
 
-  Future<void> submitBooking() async {
+  String _dateForApi(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  String _dateDisplay(DateTime d) {
+    const m = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+    return '${d.day} ${m[d.month]} ${d.year}';
+  }
+
+  Future<void> _submit() async {
     if (selectedBarberId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Silakan pilih barber terlebih dahulu!")),
-      );
+      _snack('Pilih barber terlebih dahulu.', isError: true);
+      return;
+    }
+    if (selectedDate == null) {
+      _snack('Pilih tanggal terlebih dahulu.', isError: true);
+      return;
+    }
+    if (selectedSlot == null) {
+      _snack('Pilih jam dari slot yang tersedia.', isError: true);
       return;
     }
 
-    final rawBookingTime = timeController.text.trim();
-    if (rawBookingTime.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Silakan isi jam booking terlebih dahulu!"),
-        ),
-      );
-      return;
-    }
+    setState(() => isLoadingSubmit = true);
 
-    int? currentUserIdint = await SessionHelper.getUserId();
+//     int? currentUserIdint = await SessionHelper.getUserId();
 
-    if (currentUserIdint == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Sesi habis, Silakan login kembali")),
-      );
-      return;
-    }
+//     if (currentUserIdint == null) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Sesi habis, Silakan login kembali")),
+//       );
+//       return;
+//     }
 
-    setState(() {
-      isLoadingSubmit = true;
-    });
+//     setState(() {
+//       isLoadingSubmit = true;
+//     });
 
-    // Mengirim data dinamis ke PHP
-    bool isSuccess = await _controller.createBooking(
-      userId: currentUserIdint.toString(), //mengambil session di session helper untuk idnya
-      pencukurId: selectedBarberId!, // Dinamis
-      bookingDate: dateController.text, // Dinamis
-      bookingTime: _formatBookingTime(
-        rawBookingTime,
-      ), // Dinamis dan disesuaikan PHP
-      // jumlahOrang: jumlahController.text, // Dinamis
+//     // Mengirim data dinamis ke PHP
+//     bool isSuccess = await _controller.createBooking(
+//       userId: currentUserIdint.toString(), //mengambil session di session helper untuk idnya
+//       pencukurId: selectedBarberId!, // Dinamis
+//       bookingDate: dateController.text, // Dinamis
+//       bookingTime: _formatBookingTime(
+//         rawBookingTime,
+//       ), // Dinamis dan disesuaikan PHP
+//       // jumlahOrang: jumlahController.text, // Dinamis
+
+    final isSuccess = await _controller.createBooking(
+      userId: _userId.toString(),
+      pencukurId: selectedBarberId!,
+      bookingDate: _dateForApi(selectedDate!),
+      bookingTime: '$selectedSlot:00', // HH:mm:ss untuk kolom TIME MySQL
+
     );
 
-    setState(() {
-      isLoadingSubmit = false;
-    });
+    if (!mounted) return;
+    setState(() => isLoadingSubmit = false);
 
-    // Menampilkan pesan response dari server PHP
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_controller.statusMessage),
-        backgroundColor: isSuccess ? Colors.green : Colors.red,
-      ),
-    );
+    _snack(_controller.statusMessage, isError: !isSuccess);
 
     if (isSuccess) {
       dateController.clear();
@@ -146,6 +181,17 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  void _snack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red.shade700 : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     dateController.dispose();
@@ -154,131 +200,183 @@ class _BookingScreenState extends State<BookingScreen> {
     super.dispose();
   }
 
+  // ── Build ─────────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Form Booking Barbershop')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            // 1. DROPDOWN PILIH BARBER (TUGAS 1)
-            const Text(
-              "Pilih Barber:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: selectedBarberId,
-              items: barberList.map((barber) {
-                return DropdownMenuItem<String>(
-                  value: barber.id,
-                  child: Text(barber.nama),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedBarberId = value;
-                });
-                getSlot(); // Refresh slot kosong saat ganti barber
-              },
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 16),
+      appBar: AppBar(title: const Text('Form Booking')),
+      body: isLoadingBarber
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                // ── 1. Pilih Barber ──────────────────────────────────────────
+                _label('Pilih Barber'),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: selectedBarberId,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.content_cut),
+                  ),
+                  items: barberList
+                      .map(
+                        (b) =>
+                            DropdownMenuItem(value: b.id, child: Text(b.nama)),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedBarberId = val;
+                      selectedSlot = null;
+                      slotList = [];
+                    });
+                    _loadSlots();
+                  },
+                ),
+                const SizedBox(height: 20),
 
-            // 2. INPUT TANGGAL
-            TextField(
-              controller: dateController,
-              decoration: const InputDecoration(
-                labelText: "Tanggal (YYYY-MM-DD)",
-                hintText: "Contoh: 2026-05-25",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                // Trigger otomatis mencari slot jika user selesai mengetik tanggal dengan benar (10 karakter)
-                if (value.length == 10) {
-                  getSlot();
-                }
-              },
-            ),
-            //INPUT TANGGAL END
-
-            const SizedBox(height: 16),
-
-            // 3. SLOT YANG TERSEDIA HANYA SEBAGAI REFERENSI
-            if (slotList.isNotEmpty) ...[
-              const Text(
-                "Slot Tersedia Hari Ini:",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: slotList
-                    .map(
-                      (slot) => Chip(
-                        label: Text(slot),
-                        backgroundColor: Colors.grey.shade200,
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
-            ] else ...[
-              const Text(
-                "Belum ada slot tersedia untuk barber dan tanggal ini.",
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // 4. INPUT JAM BOOKING BEBAS
-            TextField(
-              controller: timeController,
-              decoration: const InputDecoration(
-                labelText: "Jam Booking",
-                hintText: "Contoh: 10.00 atau 10:00",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 5. INPUT JUMLAH ORANG
-            // TextField(
-            //   controller: jumlahController,
-            //   keyboardType: TextInputType.number,
-            //   decoration: const InputDecoration(
-            //     labelText: "Jumlah Orang",
-            //     hintText: "Contoh: 1",
-            //     border: OutlineInputBorder(),
-            //   ),
-            // ),
-            // const SizedBox(height: 24),
-
-            // 6. TOMBOL SUBMIT (TUGAS 2 & 4)
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-              onPressed: isLoadingSubmit ? null : submitBooking,
-              child: isLoadingSubmit
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      'Pesan Sekarang',
-                      style: TextStyle(fontSize: 16),
+                // ── 2. Pilih Tanggal ─────────────────────────────────────────
+                _label('Pilih Tanggal'),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _pickDate,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 16,
                     ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today_outlined,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          selectedDate != null
+                              ? _dateDisplay(selectedDate!)
+                              : 'Tap untuk pilih tanggal',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: selectedDate != null
+                                ? Colors.black87
+                                : Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── 3. Slot Jam ──────────────────────────────────────────────
+                _label('Pilih Jam Booking'),
+                const SizedBox(height: 8),
+                if (isLoadingSlot)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else if (selectedDate == null || selectedBarberId == null)
+                  _hint('Pilih barber dan tanggal untuk melihat slot tersedia.')
+                else if (slotList.isEmpty)
+                  _hint('Tidak ada slot tersedia untuk barber dan tanggal ini.')
+                else
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: slotList.map((slot) {
+                      final isSelected = selectedSlot == slot;
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedSlot = slot),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.black
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.black
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+                          child: Text(
+                            slot,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black87,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 20),
+
+                // ── 4. Submit ────────────────────────────────────────────────
+                const SizedBox(height: 32),
+
+                // ── 5. Submit ────────────────────────────────────────────────
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: isLoadingSubmit ? null : _submit,
+                  child: isLoadingSubmit
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Pesan Sekarang',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
     );
   }
+
+  Widget _label(String text) => Text(
+    text,
+    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+  );
+
+  Widget _hint(String text) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Text(
+      text,
+      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+    ),
+  );
 }

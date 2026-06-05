@@ -6,34 +6,17 @@ class AuthController {
     required String username,
     required String password,
   }) async {
-    try {
-      // Tambahkan print untuk melacak di Debug Console
-      print("INFO: Memulai proses AuthService.login...");
-      
-      final result = await AuthService.login(
-        username: username,
-        password: password,
-      );
+    final result = await AuthService.login(username, password);
 
-      print("INFO: AuthService memberikan respon: $result");
-
-      if (result['success'] == true) {
-        final dynamic rawUserId = result['user_id'] ?? result['id'];
-
-        await SessionHelper.saveSession(
-          userId: rawUserId is int ? rawUserId : int.parse(rawUserId.toString()),
-          role: result['role'],
-        );
-      }
-
-      return result;
-    } catch (e) {
-      // Jika terjadi crash atau error di tengah jalan, tangkap di sini
-      print("ERROR di AuthController: $e");
-      return {
-        'success': false,
-        'message': 'Terjadi kesalahan internal sistem: $e'
-      };
+    if (result.success) {
+      await SessionHelper.saveSession(userId: result.userId, role: result.role);
     }
+
+    return {
+      'success': result.success,
+      'message': result.message,
+      'role': result.role,
+      'id': result.userId,
+    };
   }
 }

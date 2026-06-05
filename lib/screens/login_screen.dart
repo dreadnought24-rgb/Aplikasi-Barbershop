@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:flutter_application_1/screens/admin_screen.dart';
 import 'package:flutter_application_1/screens/main_navigation.dart';
 import 'package:flutter_application_1/utils/session_helper.dart';
 import 'register_screen.dart';
 // import 'home_screen.dart';
 import '../controllers/auth_controller.dart';
+=======
+import '../services/auth_service.dart';
+import '../utils/session_helper.dart';
+import 'register_screen.dart';
+import 'booking_screen.dart';
+import 'admin_screen.dart';
+>>>>>>> 8841cce94a414010b7ec71460928f803fea0e64b
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,45 +24,51 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  bool isLoading = false;
+  Future<void> login() async {
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
 
-  void login() async {
-    setState(() {
-      isLoading = true;
-    });
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username dan password tidak boleh kosong'),
+        ),
+      );
+      return;
+    }
 
-    final result = await AuthController.login(
-      username: usernameController.text,
-      password: passwordController.text,
-    );
+    setState(() => _isLoading = true);
 
-    setState(() {
-      isLoading = false;
-    });
+    final result = await AuthService.login(username, password);
 
-    if (result['success'] == true) {
-      //t
+    if (!mounted) return;
+    setState(() => _isLoading = false);
 
-      String? role = await SessionHelper.getRole();
+    if (result.success) {
+      // Simpan session ke SharedPreferences sebelum navigate
+      await SessionHelper.saveSession(userId: result.userId, role: result.role);
 
-      if (role == 'admin') {
+      if (!mounted) return;
+
+      if (result.role == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const AdminScreen()),
+          MaterialPageRoute(
+            builder: (_) => AdminScreen(adminUserId: result.userId),
+          ),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          MaterialPageRoute(builder: (_) => const BookingScreen()),
         );
       }
-
-      //t
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result['message'])));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -76,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: usernameController,
               decoration: const InputDecoration(labelText: "Username"),
+              textInputAction: TextInputAction.next,
             ),
 
             const SizedBox(height: 20),
@@ -84,15 +99,24 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: "Password"),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => login(),
             ),
 
             const SizedBox(height: 30),
 
-            ElevatedButton(
-              onPressed: isLoading ? null : login,
-              child: isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("Login"),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : login,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text("Login"),
+              ),
             ),
 
             TextButton(
@@ -102,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (_) => const RegisterScreen()),
                 );
               },
-
               child: const Text("Belum punya akun? Register"),
             ),
           ],

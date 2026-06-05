@@ -2,7 +2,7 @@ import '../services/booking_service.dart';
 import '../models/booking_model.dart';
 
 class BookingController {
-  String statusMessage = "";
+  String statusMessage = '';
   bool isLoading = false;
 
   Future<bool> createBooking({
@@ -13,9 +13,8 @@ class BookingController {
     // required String jumlahOrang,
   }) async {
     isLoading = true;
-    
-    // Memanggil fungsi static dari BookingService
-    BookingResponse response = await BookingService.kirimBooking(
+
+    final response = await BookingService.kirimBooking(
       userId: userId,
       pencukurId: pencukurId,
       bookingDate: bookingDate,
@@ -25,10 +24,11 @@ class BookingController {
 
     statusMessage = response.message;
     isLoading = false;
-    
+
     return response.success;
   }
+
   Future<List<BookingModel>> getAllBookings() async {
-    return await BookingService.getAllBookings();
+    return BookingService.getAllBookings();
   }
 }
