@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:flutter_application_1/screens/admin_screen.dart';
-import 'package:flutter_application_1/screens/main_navigation.dart';
-import 'package:flutter_application_1/utils/session_helper.dart';
-import 'register_screen.dart';
-// import 'home_screen.dart';
-import '../controllers/auth_controller.dart';
-=======
+// <<<<<<< HEAD
+// import 'package:flutter_application_1/screens/admin_screen.dart';
+// import 'package:flutter_application_1/screens/main_navigation.dart';
+// import 'package:flutter_application_1/utils/session_helper.dart';
+// import 'register_screen.dart';
+// // import 'home_screen.dart';
+// import '../controllers/auth_controller.dart';
+// =======
 import '../services/auth_service.dart';
 import '../utils/session_helper.dart';
 import 'register_screen.dart';
 import 'booking_screen.dart';
 import 'admin_screen.dart';
->>>>>>> 8841cce94a414010b7ec71460928f803fea0e64b
+// >>>>>>> 8841cce94a414010b7ec71460928f803fea0e64b
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
