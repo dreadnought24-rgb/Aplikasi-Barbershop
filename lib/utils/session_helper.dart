@@ -13,6 +13,11 @@ class SessionHelper {
     await prefs.setString('role', role);
   }
 
+    static Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id'); //  Mengambil data int user_id
+  }
+
   // Menyimpan ID pencukur (Andi/Budi) saat sinkronisasi admin berhasil
   static Future<void> savePencukurId(String pencukurId) async {
     final prefs = await SharedPreferences.getInstance();

@@ -4,6 +4,7 @@ import '../services/barber_service.dart';
 import '../services/booking_service.dart';
 import '../config/routes.dart';
 import '../controllers/booking_controller.dart';
+import 'package:flutter_application_1/utils/session_helper.dart';
 // import '../controllers/admin_controller.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final BookingController _controller = BookingController();
   final dateController = TextEditingController();
   final timeController = TextEditingController();
-  final jumlahController = TextEditingController();
+  // final jumlahController = TextEditingController();
 
   List<BarberModel> barberList = [];
   List<String> slotList = [];
@@ -32,7 +33,9 @@ class _BookingScreenState extends State<BookingScreen> {
     getBarber();
   }
 
-  Future<void> getBarber() async {
+// mengambil barber
+  Future<void> getBarber() async {        
+
     try {
       final data = await BarberService.getBarber();
       setState(() {
@@ -49,6 +52,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+//mengambil slot jam dengan syarat barber dan tanggal sudah diisi
   Future<void> getSlot() async {
     // Validasi: Hanya panggil API jika tanggal sudah diisi dan barber sudah dipilih
     if (dateController.text.isEmpty || selectedBarberId == null) {
@@ -97,19 +101,28 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    int? currentUserIdint = await SessionHelper.getUserId();
+
+    if (currentUserIdint == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sesi habis, Silakan login kembali")),
+      );
+      return;
+    }
+
     setState(() {
       isLoadingSubmit = true;
     });
 
     // Mengirim data dinamis ke PHP
     bool isSuccess = await _controller.createBooking(
-      userId: "1", // Sementara hardcode ID User login
+      userId: currentUserIdint.toString(), //mengambil session di session helper untuk idnya
       pencukurId: selectedBarberId!, // Dinamis
       bookingDate: dateController.text, // Dinamis
       bookingTime: _formatBookingTime(
         rawBookingTime,
       ), // Dinamis dan disesuaikan PHP
-      jumlahOrang: jumlahController.text, // Dinamis
+      // jumlahOrang: jumlahController.text, // Dinamis
     );
 
     setState(() {
@@ -127,7 +140,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (isSuccess) {
       dateController.clear();
       timeController.clear();
-      jumlahController.clear();
+      // jumlahController.clear();
       // Mengikuti Alur Tugas 4: Pindah ke status dan tutup form booking (pushReplacementNamed)
       Navigator.pushReplacementNamed(context, AppRoutes.status);
     }
@@ -137,7 +150,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void dispose() {
     dateController.dispose();
     timeController.dispose();
-    jumlahController.dispose();
+    // jumlahController.dispose();
     super.dispose();
   }
 
@@ -188,6 +201,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 }
               },
             ),
+            //INPUT TANGGAL END
+
             const SizedBox(height: 16),
 
             // 3. SLOT YANG TERSEDIA HANYA SEBAGAI REFERENSI
@@ -230,16 +245,16 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 16),
 
             // 5. INPUT JUMLAH ORANG
-            TextField(
-              controller: jumlahController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Jumlah Orang",
-                hintText: "Contoh: 1",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
+            // TextField(
+            //   controller: jumlahController,
+            //   keyboardType: TextInputType.number,
+            //   decoration: const InputDecoration(
+            //     labelText: "Jumlah Orang",
+            //     hintText: "Contoh: 1",
+            //     border: OutlineInputBorder(),
+            //   ),
+            // ),
+            // const SizedBox(height: 24),
 
             // 6. TOMBOL SUBMIT (TUGAS 2 & 4)
             ElevatedButton(

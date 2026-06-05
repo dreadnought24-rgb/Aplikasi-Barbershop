@@ -10,7 +10,7 @@ class BookingController {
     required String pencukurId,
     required String bookingDate,
     required String bookingTime,
-    required String jumlahOrang,
+    // required String jumlahOrang,
   }) async {
     isLoading = true;
     
@@ -20,7 +20,7 @@ class BookingController {
       pencukurId: pencukurId,
       bookingDate: bookingDate,
       bookingTime: bookingTime,
-      jumlahOrang: jumlahOrang,
+      // jumlahOrang: jumlahOrang,
     );
 
     statusMessage = response.message;

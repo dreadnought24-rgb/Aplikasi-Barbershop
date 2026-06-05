@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 // Navigasi dari Home ke Booking
                 // Kita juga bisa melempar ID Barber yang dipilih user secara dinamis (Contoh: ID "1")
-                Navigator.pushNamed(context, AppRoutes.booking, arguments: "1");
+                Navigator.pushNamed(context, AppRoutes.booking, arguments: "1"); //perlu dicurigai
               },
               child: const Text(
                 "Pesan Barbershop Sekarang",
@@ -34,21 +34,21 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 15,
-                ),
-              ),
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.admin);
-              },
-              child: const Text(
-                "Masuk ke Admin Screen",
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
+            // OutlinedButton(
+            //   style: OutlinedButton.styleFrom(
+            //     padding: const EdgeInsets.symmetric(
+            //       horizontal: 40,
+            //       vertical: 15,
+            //     ),
+            //   ),
+            //   onPressed: () {
+            //     Navigator.pushNamed(context, AppRoutes.admin);
+            //   },
+            //   child: const Text(
+            //     "Masuk ke Admin Screen",
+            //     style: TextStyle(fontSize: 16),
+            //   ),
+            // ),
           ],
         ),
       ),
