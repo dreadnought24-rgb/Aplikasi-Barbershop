@@ -6,20 +6,17 @@ class AuthController {
     required String username,
     required String password,
   }) async {
-    final result = await AuthService.login(
-      username: username,
-      password: password,
-    );
+    final result = await AuthService.login(username, password);
 
-    if (result['success'] == true) {
-      final dynamic rawUserId = result['user_id'] ?? result['id'];
-
-      await SessionHelper.saveSession(
-        userId: rawUserId is int ? rawUserId : int.parse(rawUserId.toString()),
-        role: result['role'],
-      );
+    if (result.success) {
+      await SessionHelper.saveSession(userId: result.userId, role: result.role);
     }
 
-    return result;
+    return {
+      'success': result.success,
+      'message': result.message,
+      'role': result.role,
+      'id': result.userId,
+    };
   }
 }

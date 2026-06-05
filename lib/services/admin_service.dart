@@ -6,7 +6,7 @@ import '../config/api_config.dart';
 class AdminService {
   static String get baseUrl => ApiConfig.baseUrl;
 
-  // Fungsi Update Status - Menggunakan key 'id' sesuai kolom DB
+  // Fungsi Update Status - nilai yang valid: 'belum bayar', 'bayar', 'cancel'
   static Future<bool> updateBookingStatus({
     required String id,
     required String status,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import '../utils/session_helper.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
+import 'booking_screen.dart';
+import 'admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,14 +15,52 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  void login() {
-    // Catatan: bagian login ini dibypass, tidak cek database.
-    // Tombol Login langsung membawa user ke HomeScreen.
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+  Future<void> login() async {
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username dan password tidak boleh kosong'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final result = await AuthService.login(username, password);
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result.success) {
+      // Simpan session ke SharedPreferences sebelum navigate
+      await SessionHelper.saveSession(userId: result.userId, role: result.role);
+
+      if (!mounted) return;
+
+      if (result.role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AdminScreen(adminUserId: result.userId),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const BookingScreen()),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -40,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: usernameController,
               decoration: const InputDecoration(labelText: "Username"),
+              textInputAction: TextInputAction.next,
             ),
 
             const SizedBox(height: 20),
@@ -48,11 +90,25 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: "Password"),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => login(),
             ),
 
             const SizedBox(height: 30),
 
-            ElevatedButton(onPressed: login, child: const Text("Login")),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : login,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text("Login"),
+              ),
+            ),
 
             TextButton(
               onPressed: () {
@@ -61,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   MaterialPageRoute(builder: (_) => const RegisterScreen()),
                 );
               },
-
               child: const Text("Belum punya akun? Register"),
             ),
           ],
