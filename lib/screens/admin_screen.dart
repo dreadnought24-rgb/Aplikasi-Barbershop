@@ -1,3 +1,5 @@
+//skip dulu
+
 import 'package:flutter/material.dart';
 import '../models/barber_model.dart';
 import '../services/barber_service.dart';
@@ -14,7 +16,7 @@ class _AdminScreenState extends State<AdminScreen> {
   String selectedBarberId = '';
   bool isLoading = true;
   bool isUpdating = false;
-  List<BarberModel> barberList = [];
+  List<BarberModel> barberList = [];//?
   List<dynamic> queueList = [];
 
   @override

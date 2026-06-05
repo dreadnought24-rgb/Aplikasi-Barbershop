@@ -20,7 +20,7 @@ class BookingModel {
 
     return BookingModel(
 
-      bookingId: json['booking_id'].toString(),
+      bookingId: json['booking_id'].toString(),//booking_id?
       barber: json['nama_pencukur'] ?? '',
       date: json['booking_date'] ?? '',
       time: json['booking_time'] ?? '',
