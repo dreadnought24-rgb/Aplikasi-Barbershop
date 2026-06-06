@@ -177,7 +177,7 @@ class _BookingScreenState extends State<BookingScreen> {
       timeController.clear();
       // jumlahController.clear();
       // Mengikuti Alur Tugas 4: Pindah ke status dan tutup form booking (pushReplacementNamed)
-      Navigator.pushReplacementNamed(context, AppRoutes.status);
+      Navigator.pushReplacementNamed(context, AppRoutes.mainNav);
     }
   }
 
