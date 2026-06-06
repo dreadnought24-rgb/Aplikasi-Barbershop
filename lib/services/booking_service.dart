@@ -43,24 +43,32 @@ class BookingService {
   }
 
   // 2. Ambil booking terbaru milik user (GET)
-  static Future<BookingModel?> getBooking(int userId) async {
-    try {
-      final url = Uri.parse(
-        '$baseUrl/booking/get_user_booking.php?user_id=$userId',
-      );
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+static Future<List<BookingModel>> getBooking(int userId) async {
+  try {
+    final url = Uri.parse(
+      '$baseUrl/booking/get_user_booking.php?user_id=$userId',
+    );
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true) {
-          return BookingModel.fromJson(jsonData['data']);
-        }
+    final response =
+        await http.get(url).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+
+      if (jsonData['success'] == true) {
+        final List<dynamic> data = jsonData['data'];
+
+        return data
+            .map((e) => BookingModel.fromJson(e))
+            .toList();
       }
-      return null;
-    } catch (e) {
-      return null;
     }
+
+    return [];
+  } catch (e) {
+    return [];
   }
+}
 
   // 3. Ambil slot waktu yang masih tersedia
   static Future<List<String>> getAvailableSlots({

@@ -12,8 +12,10 @@ class StatusScreen extends StatefulWidget {
 }
 
 class _StatusScreenState extends State<StatusScreen> {
-  BookingModel? booking;
-  bool isLoading = true;
+List<BookingModel> bookings = [];
+bool isLoading = true;
+
+List<bool> expanded = [];
 
   @override
   void initState() {
@@ -28,10 +30,16 @@ class _StatusScreenState extends State<StatusScreen> {
     final data = await BookingService.getBooking(userId);
 
     if (!mounted) return;
-    setState(() {
-      booking = data;
-      isLoading = false;
-    });
+   setState(() {
+  bookings = data;
+
+  expanded = List.generate(
+    data.length,
+    (_) => false,
+  );
+
+  isLoading = false;
+});
   }
 
   String _formatTime(String time) {
@@ -70,10 +78,10 @@ class _StatusScreenState extends State<StatusScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Status Booking')),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : booking == null
-          ? _buildEmpty()
-          : _buildContent(),
+    ? const Center(child: CircularProgressIndicator())
+    : bookings.isEmpty
+        ? _buildEmpty()
+        : _buildList(),
     );
   }
 
@@ -108,155 +116,321 @@ class _StatusScreenState extends State<StatusScreen> {
     );
   }
 
-  Widget _buildContent() {
-    final b = booking!;
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Booking Aktif',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  b.barber,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.confirmation_number_outlined,
-                      color: Colors.white60,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Antrian No. ${b.queue}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+  // Widget _buildDetail() {
+  //   final b = booking!;
+  //   return Padding(
+  //     padding: const EdgeInsets.all(20),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+
+  //         IconButton(
+  //           onPressed: () {
+  //             setState(() {
+  //             showDetail = false;
+  //             });
+  //             },
+  //         icon: const Icon(Icons.arrow_back),
+  //       ),
+
+  //         // Header card
+  //         Container(
+  //           width: double.infinity,
+  //           padding: const EdgeInsets.all(20),
+  //           decoration: BoxDecoration(
+  //             color: Colors.black,
+  //             borderRadius: BorderRadius.circular(20),
+  //           ),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               const Text(
+  //                 'Booking Aktif',
+  //                 style: TextStyle(color: Colors.white70, fontSize: 13),
+  //               ),
+  //               const SizedBox(height: 8),
+  //               Text(
+  //                 b.barber,
+  //                 style: const TextStyle(
+  //                   color: Colors.white,
+  //                   fontSize: 22,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 6),
+  //               Row(
+  //                 children: [
+  //                   const Icon(
+  //                     Icons.confirmation_number_outlined,
+  //                     color: Colors.white60,
+  //                     size: 16,
+  //                   ),
+  //                   const SizedBox(width: 6),
+  //                   Text(
+  //                     'Antrian No. ${b.queue}',
+  //                     style: const TextStyle(
+  //                       color: Colors.white70,
+  //                       fontSize: 15,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         const SizedBox(height: 20),
+
+  //         // Detail rows
+  //         _infoRow(Icons.calendar_today_outlined, 'Tanggal', b.date),
+  //         const SizedBox(height: 10),
+  //         _infoRow(Icons.access_time_outlined, 'Jam', _formatTime(b.time)),
+  //         const SizedBox(height: 10),
+
+  //         // Status row dengan warna
+  //         Container(
+  //           width: double.infinity,
+  //           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.circular(16),
+  //             border: Border.all(color: Colors.black12),
+  //           ),
+  //           child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               const Row(
+  //                 children: [
+  //                   Icon(Icons.info_outline, size: 18, color: Colors.black54),
+  //                   SizedBox(width: 10),
+  //                   Text(
+  //                     'Status',
+  //                     style: TextStyle(
+  //                       fontSize: 16,
+  //                       fontWeight: FontWeight.w600,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //               Container(
+  //                 padding: const EdgeInsets.symmetric(
+  //                   horizontal: 12,
+  //                   vertical: 4,
+  //                 ),
+  //                 decoration: BoxDecoration(
+  //                   color: _statusColor(b.status).withValues(alpha: 0.12),
+  //                   borderRadius: BorderRadius.circular(20),
+  //                   border: Border.all(
+  //                     color: _statusColor(b.status).withValues(alpha: 0.4),
+  //                   ),
+  //                 ),
+  //                 child: Text(
+  //                   _statusLabel(b.status),
+  //                   style: TextStyle(
+  //                     color: _statusColor(b.status),
+  //                     fontWeight: FontWeight.w600,
+  //                     fontSize: 13,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+
+  //         const Spacer(),
+
+  //         SizedBox(
+  //           width: double.infinity,
+  //           child: ElevatedButton(
+  //             style: ElevatedButton.styleFrom(
+  //               minimumSize: const Size.fromHeight(50),
+  //               backgroundColor: Colors.black,
+  //               foregroundColor: Colors.white,
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //             ),
+  //             onPressed: () => Navigator.pushNamedAndRemoveUntil(
+  //               context,
+  //               AppRoutes.booking,
+  //               (r) => false,
+  //             ),
+  //             child: const Text('Booking Lagi'),
+  //           ),
+  //         ),
+  //         const SizedBox(height: 12),
+  //         SizedBox(
+  //           width: double.infinity,
+  //           child: OutlinedButton(
+  //             style: OutlinedButton.styleFrom(
+  //               minimumSize: const Size.fromHeight(50),
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //             ),
+  //             onPressed: () => _loadBooking(),
+  //             child: const Text('Refresh Status'),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+Widget _buildList() {
+  return ListView.builder(
+    padding: const EdgeInsets.all(20),
+    itemCount: bookings.length,
+    itemBuilder: (context, index) {
+      final b = bookings[index];
+
+      return InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          setState(() {
+            expanded[index] = !expanded[index];
+          });
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black12),
           ),
-          const SizedBox(height: 20),
+          child: Column(
+            children: [
 
-          // Detail rows
-          _infoRow(Icons.calendar_today_outlined, 'Tanggal', b.date),
-          const SizedBox(height: 10),
-          _infoRow(Icons.access_time_outlined, 'Jam', _formatTime(b.time)),
-          const SizedBox(height: 10),
+              Row(
+                children: [
 
-          // Status row dengan warna
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 18, color: Colors.black54),
-                    SizedBox(width: 10),
-                    Text(
-                      'Status',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  const CircleAvatar(
+                    child: Icon(Icons.content_cut),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        Text(
+                          b.barber,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text(
+                          "${b.date} • ${_formatTime(b.time)}",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+
+                      ],
                     ),
-                  ],
+                  ),
+
+                  Icon(
+                    expanded[index]
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                  ),
+
+                ],
+              ),
+
+              if (expanded[index]) ...[
+
+                const SizedBox(height: 20),
+
+                _infoRow(
+                  Icons.calendar_today_outlined,
+                  "Tanggal",
+                  b.date,
                 ),
+
+                const SizedBox(height: 10),
+
+                _infoRow(
+                  Icons.access_time_outlined,
+                  "Jam",
+                  _formatTime(b.time),
+                ),
+
+                const SizedBox(height: 10),
+
+                _infoRow(
+                  Icons.confirmation_number_outlined,
+                  "No Antrian",
+                  b.queue.toString(),
+                ),
+
+                const SizedBox(height: 10),
+
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
+                    horizontal: 16,
+                    vertical: 14,
                   ),
                   decoration: BoxDecoration(
-                    color: _statusColor(b.status).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _statusColor(b.status).withValues(alpha: 0.4),
-                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.black12),
                   ),
-                  child: Text(
-                    _statusLabel(b.status),
-                    style: TextStyle(
-                      color: _statusColor(b.status),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
+                  child: Row(
+                    children: [
+
+                      const Icon(
+                        Icons.info_outline,
+                        size: 18,
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      const Text(
+                        "Status",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _statusColor(b.status).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          _statusLabel(b.status),
+                          style: TextStyle(
+                            color: _statusColor(b.status),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                    ],
                   ),
                 ),
+
               ],
-            ),
-          ),
 
-          const Spacer(),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.booking,
-                (r) => false,
-              ),
-              child: const Text('Booking Lagi'),
-            ),
+            ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: () => _loadBooking(),
-              child: const Text('Refresh Status'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _infoRow(IconData icon, String label, String value) {
     return Container(
