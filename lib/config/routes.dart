@@ -10,7 +10,7 @@ import '../widgets/splashlogo.dart'; // Impor SplashLogo
 class AppRoutes {
   static const String login = '/login';
   static const String mainNav = '/main_nav';
-  static const String home = '/home';
+  static const String home = '/home' ;
   static const String booking = '/booking';
   static const String status = '/status';
   static const String admin = '/admin';

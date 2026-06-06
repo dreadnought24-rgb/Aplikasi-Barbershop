@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import '../widgets/base_background.dart'; // Sesuaikan path sesuai struktur folder Anda
+import '../widgets/base_background.dart';
 
 class HomeScreen extends StatelessWidget {
-  // 1. Tambahkan parameter fungsi callback ini agar bisa berkomunikasi dengan MainNavigation
   final Function(int)? onChangeTab;
+  final String username; // ← terima username dari luar
 
-  const HomeScreen({super.key, this.onChangeTab});
+  const HomeScreen({
+    super.key,
+    this.onChangeTab,
+    this.username = 'User', // default jika belum login
+  });
 
   @override
   Widget build(BuildContext context) {
     return BaseBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Wajib transparan agar gradasi BaseBackground terlihat
+        backgroundColor: Colors.transparent,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
@@ -23,8 +27,8 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Image.asset(
-                      '/images/barberinLogo.png', 
-                      height: 35, 
+                      '/images/barberinLogo.png',
+                      height: 35,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -60,9 +64,9 @@ class HomeScreen extends StatelessWidget {
                     fontFamily: 'InriaSerif',
                   ),
                 ),
-                const Text(
-                  'MR_CLARK99',
-                  style: TextStyle(
+                Text(
+                  username.toUpperCase(), // ← pakai username dari DB
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -87,7 +91,6 @@ class HomeScreen extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18),
                       onPressed: () {
-                        // Jika panah subheader ditekan, pindah ke tab Booking (indeks 1)
                         if (onChangeTab != null) onChangeTab!(1);
                       },
                     ),
@@ -100,55 +103,40 @@ class HomeScreen extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      // Card 1: Classic Cut
                       _buildServiceCard(
                         imagePath: 'images/classic_cut.jpg',
                         tag: 'MOST POPULAR',
                         title: 'Classic Cut (Adult)',
                         duration: '45 Mins',
                         price: 'Rp 40.000',
-                        onTap: () {
-                          // Pindah ke halaman Booking (indeks 1 di MainNavigation)
-                          if (onChangeTab != null) onChangeTab!(1);
-                        },
+                        onTap: () { if (onChangeTab != null) onChangeTab!(1); },
                       ),
                       const SizedBox(width: 15),
-                      // Card 2: Junior Cut
                       _buildServiceCard(
                         imagePath: 'images/junior_cut.jpg',
                         tag: 'YOUNG',
                         title: 'Junior Cut',
                         duration: '40 Mins',
                         price: 'Rp 45.000',
-                        onTap: () {
-                          // Pindah ke halaman Booking (indeks 1 di MainNavigation)
-                          if (onChangeTab != null) onChangeTab!(1);
-                        },
+                        onTap: () { if (onChangeTab != null) onChangeTab!(1); },
                       ),
                       const SizedBox(width: 15),
-                      // Card 3: Executive Cut
                       _buildServiceCard(
-                        imagePath: 'images/executive_cut.jpg', 
+                        imagePath: 'images/executive_cut.jpg',
                         tag: 'PERFECT',
                         title: 'Executive Cut',
                         duration: '50 Mins',
                         price: 'Rp 50.000',
-                        onTap: () {
-                          // Pindah ke halaman Booking (indeks 1 di MainNavigation)
-                          if (onChangeTab != null) onChangeTab!(1);
-                        },
+                        onTap: () { if (onChangeTab != null) onChangeTab!(1); },
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 40),
 
-                // --- LIVE STATUS BANNER (DIBUNGKUS INKWELL) ---
+                // --- LIVE STATUS BANNER ---
                 InkWell(
-                  onTap: () {
-                    // Pindah ke halaman Status Antrian (indeks 2 di MainNavigation)
-                    if (onChangeTab != null) onChangeTab!(2);
-                  },
+                  onTap: () { if (onChangeTab != null) onChangeTab!(2); },
                   borderRadius: BorderRadius.circular(16),
                   splashColor: Colors.white10,
                   child: Container(
@@ -174,11 +162,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                             Positioned(
                               left: 0,
-                              child: Container(
-                                width: 4,
-                                height: 20,
-                                color: Colors.red,
-                              ),
+                              child: Container(width: 4, height: 20, color: Colors.red),
                             )
                           ],
                         ),
@@ -209,10 +193,7 @@ class HomeScreen extends StatelessWidget {
                                       children: [
                                         CircleAvatar(radius: 3, backgroundColor: Colors.red),
                                         SizedBox(width: 4),
-                                        Text(
-                                          'LIVE',
-                                          style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold),
-                                        ),
+                                        Text('LIVE', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
                                       ],
                                     ),
                                   )
@@ -221,11 +202,7 @@ class HomeScreen extends StatelessWidget {
                               const SizedBox(height: 4),
                               const Text(
                                 '2 pelanggan sedang dalam antrian',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 13,
-                                  fontFamily: 'InriaSerif',
-                                ),
+                                style: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
                               ),
                             ],
                           ),
@@ -250,17 +227,16 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // --- HELPER FUNCTION DENGAN PARAMETER ONTAP ---
   Widget _buildServiceCard({
-    required String imagePath, 
+    required String imagePath,
     required String tag,
     required String title,
     required String duration,
     required String price,
-    required VoidCallback onTap, // Tambahkan parameter onTap di sini
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: onTap, // Daftarkan aksi klik pada kartu
+      onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       splashColor: Colors.white10,
       child: Container(
@@ -269,12 +245,9 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           image: DecorationImage(
-            image: AssetImage(imagePath), 
+            image: AssetImage(imagePath),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.4),
-              BlendMode.darken,
-            ),
+            colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken),
           ),
         ),
         padding: const EdgeInsets.all(16),
@@ -288,33 +261,16 @@ class HomeScreen extends StatelessWidget {
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(
-                tag,
-                style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
+              child: Text(tag, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'InriaSerif',
-              ),
-            ),
+            Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
             const SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  duration,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'InriaSerif'),
-                ),
-                Text(
-                  price,
-                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'InriaSerif'),
-                ),
+                Text(duration, style: const TextStyle(color: Colors.white70, fontSize: 13, fontFamily: 'InriaSerif')),
+                Text(price, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'InriaSerif')),
               ],
             ),
           ],

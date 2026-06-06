@@ -23,6 +23,7 @@ class _StatusScreenState extends State<StatusScreen> {
     _loadBooking();
   }
 
+
   Future<void> _loadBooking() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('user_id') ?? 0;
@@ -42,18 +43,16 @@ class _StatusScreenState extends State<StatusScreen> {
 
   // ── HELPER FUNCTION: PEMETAAN FOTO BARBER DARI ASSETS LOKAL ──
   String _getBarberAsset(String barberName) {
-    // Mengubah string nama barber menjadi huruf kecil semua agar aman dicocokkan
     final name = barberName.toLowerCase().trim();
 
     if (name.contains('andi')) {
-      return 'images/capster_andi.jpg'; // <── Sesuaikan path & nama file lokalmu
+      return 'images/capster_andi.jpg'; 
     } else if (name.contains('budi')) {
       return 'images/capster_budi.jpg';
     } else if (name.contains('ceri')) {
       return 'images/capster_ceri.jpg';
     } 
     
-    // Kembalikan gambar default jika nama barber tidak terdaftar di atas
     return 'assets/default_avatar.png'; 
   }
 
@@ -179,9 +178,8 @@ class _StatusScreenState extends State<StatusScreen> {
               children: [
                 Row(
                   children: [
-                    // ── MENGGANTI ICON GUNTING MENJADI FOTO ASSET BARBER ──
                     CircleAvatar(
-                      radius: 24, // Sedikit diperbesar agar fotonya jelas terlihat
+                      radius: 24, 
                       backgroundColor: Colors.white.withOpacity(0.1),
                       backgroundImage: AssetImage(_getBarberAsset(b.barber)),
                     ),
@@ -200,11 +198,14 @@ class _StatusScreenState extends State<StatusScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
+                          // ── DIUBAH DI SINI: Menambahkan nama service di samping jam ──
                           Text(
-                            "${b.date} • ${_formatTime(b.time)}",
+                            "${b.date} • ${_formatTime(b.time)} • ${b.layanan}", // ◄ Catatan: jika di modelmu variabelnya bernama 'layanan', ganti menjadi b.layanan
                             style: const TextStyle(
                               color: Colors.grey,
+                              fontSize: 14,
                             ),
+                            overflow: TextOverflow.ellipsis, // Mencegah teks meluber jika terlalu panjang
                           ),
                         ],
                       ),
@@ -229,6 +230,13 @@ class _StatusScreenState extends State<StatusScreen> {
                     Icons.access_time_outlined,
                     "Jam",
                     _formatTime(b.time),
+                  ),
+                  const SizedBox(height: 10),
+                  // ── OPSIONAL: Menambahkan row detail Layanan juga saat di-expand ──
+                  _infoRow(
+                    Icons.content_cut,
+                    "Layanan",
+                    b.layanan ?? '', // ◄ Sesuaikan dengan b.service / b.layanan
                   ),
                   const SizedBox(height: 10),
                   _infoRow(

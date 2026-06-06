@@ -12,7 +12,7 @@ class BookingService {
     required String pencukurId,
     required String bookingDate,
     required String bookingTime,
-    // required String jumlahOrang,
+    required String service,    // required String jumlahOrang,
   }) async {
     try {
       final response = await http
@@ -23,6 +23,7 @@ class BookingService {
               'pencukur_id': pencukurId,
               'booking_date': bookingDate,
               'booking_time': bookingTime,
+              'layanan': service,
               // 'jumlah_orang': jumlahOrang,
             },
           )
