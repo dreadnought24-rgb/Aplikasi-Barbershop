@@ -8,7 +8,7 @@ class ApiConfig {
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return "http://10.0.2.2/barbershop_api";
+        return "http://192.168.1.39/barbershop_api";
       default:
         return "http://192.168.1.39/barbershop_api";
     }

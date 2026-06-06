@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
 // <<<<<<< HEAD
 // import 'package:flutter_application_1/screens/admin_screen.dart';
-// import 'package:flutter_application_1/screens/main_navigation.dart';
 // import 'package:flutter_application_1/utils/session_helper.dart';
 // import 'register_screen.dart';
-// // import 'home_screen.dart';
+// import 'home_screen.dart';
 // import '../controllers/auth_controller.dart';
+// import 'booking_screen.dart';
 // =======
+import 'package:flutter/material.dart';
+import 'main_navigation.dart';
 import '../services/auth_service.dart';
 import '../utils/session_helper.dart';
 import 'register_screen.dart';
-import 'booking_screen.dart';
 import 'admin_screen.dart';
 // >>>>>>> 8841cce94a414010b7ec71460928f803fea0e64b
 
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const BookingScreen()),
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
         );
       }
     } else {
