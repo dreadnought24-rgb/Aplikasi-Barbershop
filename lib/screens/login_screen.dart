@@ -1,18 +1,10 @@
-// <<<<<<< HEAD
-// import 'package:flutter_application_1/screens/admin_screen.dart';
-// import 'package:flutter_application_1/utils/session_helper.dart';
-// import 'register_screen.dart';
-// import 'home_screen.dart';
-// import '../controllers/auth_controller.dart';
-// import 'booking_screen.dart';
-// =======
 import 'package:flutter/material.dart';
 import 'main_navigation.dart';
 import '../services/auth_service.dart';
 import '../utils/session_helper.dart';
 import 'register_screen.dart';
 import 'admin_screen.dart';
-// >>>>>>> 8841cce94a414010b7ec71460928f803fea0e64b
+import '../widgets/base_background.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Username dan password tidak boleh kosong'),
+          content: Text('Username dan password tidak boleh kosong', style: TextStyle(fontFamily: 'InriaSerif')),
         ),
       );
       return;
@@ -47,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result.success) {
-      // Simpan session ke SharedPreferences sebelum navigate
       await SessionHelper.saveSession(userId: result.userId, role: result.role);
 
       if (!mounted) return;
@@ -67,7 +58,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(result.message, style: const TextStyle(fontFamily: 'InriaSerif')), 
+          backgroundColor: Colors.red
+        ),
       );
     }
   }
@@ -81,56 +75,153 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(labelText: "Username"),
-              textInputAction: TextInputAction.next,
-            ),
-
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Password"),
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => login(),
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : login,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text("Login"),
+    return BaseBackground(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Teks utama "Hi, Siap Cukur?" menggunakan InriaSerif
+              const Text(
+                'Hi,\nSiap Cukur?',
+                style: TextStyle(
+                  fontFamily: 'InriaSerif',
+                  color: Colors.white,
+                  fontSize: 40,
+                  fontWeight: FontWeight.w500,
+                  height: 1.2,
+                ),
               ),
-            ),
+              const SizedBox(height: 40),
 
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                );
-              },
-              child: const Text("Belum punya akun? Register"),
-            ),
-          ],
+              // Input Username
+              TextField(
+                controller: usernameController,
+                style: const TextStyle(color: Colors.white, fontFamily: 'InriaSerif'),
+                decoration: const InputDecoration(
+                  labelText: "Username",
+                  labelStyle: TextStyle(color: Colors.white70, fontFamily: 'InriaSerif'),
+                  floatingLabelStyle: TextStyle(color: Colors.white, fontFamily: 'InriaSerif'),
+                  hintText: "Nama Anda.....",
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white54),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 25),
+
+              // Input Password
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: const TextStyle(color: Colors.white, fontFamily: 'InriaSerif'),
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                  labelStyle: TextStyle(color: Colors.white70, fontFamily: 'InriaSerif'),
+                  floatingLabelStyle: TextStyle(color: Colors.white, fontFamily: 'InriaSerif'),
+                  hintText: "*******",
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white54),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                ),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => login(),
+              ),
+              const SizedBox(height: 40),
+
+              // Tombol Login Kotak Hitam
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF111111),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 5,
+                  ),
+                  onPressed: _isLoading ? null : login,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          "Login",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif'),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 25),
+
+              // Tombol Register bawah dengan efek Hover
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Belum punya akun? ",
+                      style: TextStyle(
+                        color: Colors.white70, 
+                        fontSize: 14, 
+                        fontFamily: 'InriaSerif',
+                      ),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: Colors.grey,
+                      ).copyWith(
+                        foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) {
+                              return Colors.white; // Warna saat kursor di atasnya (hover)
+                            }
+                            return Colors.grey; // Warna default
+                          },
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                        );
+                      },
+                      child: const Text(
+                        "Register",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'InriaSerif',
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
