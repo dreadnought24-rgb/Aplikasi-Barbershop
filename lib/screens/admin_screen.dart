@@ -73,8 +73,18 @@ class _AdminScreenState extends State<AdminScreen> {
     try {
       final data = await AdminService.getBarberQueue(selectedBarberId);
       if (!mounted) return;
+
+      // 1. Dapatkan tanggal hari ini dengan format YYYY-MM-DD
+      final now = DateTime.now();
+      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+      // 2. Filter data mentah agar hanya menampilkan antrian hari ini saja
+      final rawList = data ?? [];
+      final todayQueue = rawList.where((item) => _date(item) == todayStr).toList();
+
       setState(() {
-        queueList = data ?? [];
+        // 3. Masukkan data yang sudah difilter ke dalam queueList
+        queueList = todayQueue;
         queueList.sort((a, b) => _queueNum(a).compareTo(_queueNum(b)));
         isLoading = false;
       });
