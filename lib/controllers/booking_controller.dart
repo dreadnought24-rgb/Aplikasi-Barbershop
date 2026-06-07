@@ -10,16 +10,17 @@ class BookingController {
     required String pencukurId,
     required String bookingDate,
     required String bookingTime,
-    // required String jumlahOrang,
+    required String service, // Menerima 'Classic Cut', 'Junior Cut', atau 'Executive Cut'
   }) async {
     isLoading = true;
 
+    // LANGSUNG KIRIM: Tidak perlu dikonversi lagi karena enum database sudah sama persis
     final response = await BookingService.kirimBooking(
       userId: userId,
       pencukurId: pencukurId,
       bookingDate: bookingDate,
       bookingTime: bookingTime,
-      // jumlahOrang: jumlahOrang,
+      service: service, // Kirim nama layanan langsung tanpa konversi
     );
 
     statusMessage = response.message;

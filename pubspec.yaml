@@ -38,6 +38,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +67,9 @@ flutter:
     - assets/images/classic_cut.jpg
     - assets/images/junior_cut.jpg
     - assets/images/executive_cut.jpg
+    - assets/images/capster_andi.jpg
+    - assets/images/capster_budi.jpg
+    - assets/images/capster_ceri.jpg
   
   fonts:
     - family: InriaSerif

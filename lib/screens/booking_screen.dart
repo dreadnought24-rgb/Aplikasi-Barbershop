@@ -5,8 +5,7 @@ import '../services/barber_service.dart';
 import '../services/booking_service.dart';
 import '../config/routes.dart';
 import '../controllers/booking_controller.dart';
-// import 'package:flutter_application_1/utils/session_helper.dart';
-// import '../controllers/admin_controller.dart';
+import '../widgets/base_background.dart'; 
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -17,19 +16,40 @@ class BookingScreen extends StatefulWidget {
 
 class _BookingScreenState extends State<BookingScreen> {
   final BookingController _controller = BookingController();
-  final dateController = TextEditingController();
-  final timeController = TextEditingController();
-  // final jumlahController = TextEditingController();
 
   List<BarberModel> barberList = [];
   List<String> slotList = [];
   String? selectedBarberId;
   String? selectedSlot;
-  DateTime? selectedDate;
+  DateTime selectedDate = DateTime.now();
+  
+  // ── SINKRONISASI ENUM ──────────────────────────────────────────────────────
+  // Nilai default awal disamakan dengan salah satu opsi Enum database Anda
+  String selectedService = 'Classic Cut';
+  int servicePrice = 40000;
+
   bool isLoadingBarber = true;
   bool isLoadingSlot = false;
   bool isLoadingSubmit = false;
   int _userId = 0;
+
+  final List<DateTime> _daysList = List.generate(7, (index) => DateTime.now().add(Duration(days: index)));
+
+  // ── MAP DATA UNTUK FOTO & QUOTES BERDASARKAN NAMA/ID CAPSTER ─────────────────
+  final Map<String, Map<String, String>> _capsterDetails = {
+    'Andi': {
+      'image': 'images/capster_andi.jpg',
+      'quote': '"Precision is the only standard."',
+    },
+    'Budi': {
+      'image': 'images/capster_budi.jpg',
+      'quote': '"Style is a reflection of your attitude."',
+    },
+    'Ceri': {
+      'image': 'images/capster_ceri.jpg',
+      'quote': '"Sharp look, sharp mind."',
+    },
+  };
 
   @override
   void initState() {
@@ -38,12 +58,10 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _init() async {
-    // Baca user_id dari SharedPreferences yang disimpan saat login
     final prefs = await SharedPreferences.getInstance();
     _userId = prefs.getInt('user_id') ?? 0;
 
     if (_userId == 0 && mounted) {
-      // Belum login, redirect ke login
       Navigator.pushReplacementNamed(context, AppRoutes.login);
       return;
     }
@@ -56,6 +74,7 @@ class _BookingScreenState extends State<BookingScreen> {
         selectedBarberId = barberList.isNotEmpty ? barberList.first.id : null;
         isLoadingBarber = false;
       });
+      _loadSlots();
     } catch (e) {
       if (!mounted) return;
       setState(() => isLoadingBarber = false);
@@ -64,69 +83,67 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _loadSlots() async {
-    if (selectedDate == null || selectedBarberId == null) return;
+    if (selectedBarberId == null) return;
     setState(() {
       isLoadingSlot = true;
       selectedSlot = null;
       slotList = [];
     });
 
-    final data = await BookingService.getAvailableSlots(
-      tanggal: _dateForApi(selectedDate!),
-      idPencukur: selectedBarberId!,
-    );
+    try {
+      final data = await BookingService.getAvailableSlots(
+        tanggal: _dateForApi(selectedDate),
+        idPencukur: selectedBarberId!,
+      );
 
-    if (!mounted) return;
-    setState(() {
-      slotList = data;
-      isLoadingSlot = false;
-    });
-  }
-
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 30)),
-      helpText: 'Pilih tanggal booking',
-    );
-    if (date != null && mounted) {
-      setState(() => selectedDate = date);
-      await _loadSlots();
+      if (!mounted) return;
+      setState(() {
+        slotList = data;
+        isLoadingSlot = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => isLoadingSlot = false);
     }
   }
 
   String _dateForApi(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  String _dateDisplay(DateTime d) {
-    const m = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'Mei',
-      'Jun',
-      'Jul',
-      'Agu',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Des',
-    ];
-    return '${d.day} ${m[d.month]} ${d.year}';
+  String _getNamaHari(int weekday) {
+    const hari = ['', 'SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'];
+    return hari[weekday];
+  }
+
+  List<String> _getSlotsByTimeOfDay(bool isMorning) {
+    return slotList.where((slot) {
+      final hour = int.tryParse(slot.split(':').first) ?? 0;
+      return isMorning ? hour < 12 : hour >= 12;
+    }).toList();
+  }
+
+  Map<String, String> _getSelectedCapsterDetails() {
+    if (selectedBarberId == null || barberList.isEmpty) {
+      return {
+        'image': 'images/capster_andi.jpg',
+        'quote': '"Precision is the only standard."',
+      };
+    }
+    
+    final currentBarber = barberList.firstWhere(
+      (b) => b.id == selectedBarberId,
+      orElse: () => barberList.first,
+    );
+
+    return _capsterDetails[currentBarber.nama] ?? {
+      'image': 'images/capster_andi.jpg',
+      'quote': '"Precision is the only standard."',
+    };
   }
 
   Future<void> _submit() async {
     if (selectedBarberId == null) {
       _snack('Pilih barber terlebih dahulu.', isError: true);
-      return;
-    }
-    if (selectedDate == null) {
-      _snack('Pilih tanggal terlebih dahulu.', isError: true);
       return;
     }
     if (selectedSlot == null) {
@@ -136,35 +153,13 @@ class _BookingScreenState extends State<BookingScreen> {
 
     setState(() => isLoadingSubmit = true);
 
-//     int? currentUserIdint = await SessionHelper.getUserId();
-
-//     if (currentUserIdint == null) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         const SnackBar(content: Text("Sesi habis, Silakan login kembali")),
-//       );
-//       return;
-//     }
-
-//     setState(() {
-//       isLoadingSubmit = true;
-//     });
-
-//     // Mengirim data dinamis ke PHP
-//     bool isSuccess = await _controller.createBooking(
-//       userId: currentUserIdint.toString(), //mengambil session di session helper untuk idnya
-//       pencukurId: selectedBarberId!, // Dinamis
-//       bookingDate: dateController.text, // Dinamis
-//       bookingTime: _formatBookingTime(
-//         rawBookingTime,
-//       ), // Dinamis dan disesuaikan PHP
-//       // jumlahOrang: jumlahController.text, // Dinamis
-
+    // Mengirim string murni ('Classic Cut', 'Junior Cut', atau 'Executive Cut') ke Controller
     final isSuccess = await _controller.createBooking(
       userId: _userId.toString(),
       pencukurId: selectedBarberId!,
-      bookingDate: _dateForApi(selectedDate!),
-      bookingTime: '$selectedSlot:00', // HH:mm:ss untuk kolom TIME MySQL
-
+      bookingDate: _dateForApi(selectedDate),
+      bookingTime: '$selectedSlot:00',
+      service: selectedService, 
     );
 
     if (!mounted) return;
@@ -173,10 +168,7 @@ class _BookingScreenState extends State<BookingScreen> {
     _snack(_controller.statusMessage, isError: !isSuccess);
 
     if (isSuccess) {
-      dateController.clear();
-      timeController.clear();
-      // jumlahController.clear();
-      // Mengikuti Alur Tugas 4: Pindah ke status dan tutup form booking (pushReplacementNamed)
+      await _loadSlots(); 
       Navigator.pushReplacementNamed(context, AppRoutes.mainNav);
     }
   }
@@ -187,196 +179,352 @@ class _BookingScreenState extends State<BookingScreen> {
         content: Text(msg),
         backgroundColor: isError ? Colors.red.shade700 : Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
   @override
-  void dispose() {
-    dateController.dispose();
-    timeController.dispose();
-    // jumlahController.dispose();
-    super.dispose();
-  }
-
-  // ── Build ─────────────────────────────────────────────────────────────────────
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Form Booking')),
-      body: isLoadingBarber
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                // ── 1. Pilih Barber ──────────────────────────────────────────
-                _label('Pilih Barber'),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: selectedBarberId,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.content_cut),
-                  ),
-                  items: barberList
-                      .map(
-                        (b) =>
-                            DropdownMenuItem(value: b.id, child: Text(b.nama)),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      selectedBarberId = val;
-                      selectedSlot = null;
-                      slotList = [];
-                    });
-                    _loadSlots();
-                  },
-                ),
-                const SizedBox(height: 20),
+    final currentDetails = _getSelectedCapsterDetails();
 
-                // ── 2. Pilih Tanggal ─────────────────────────────────────────
-                _label('Pilih Tanggal'),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _pickDate,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade400),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today_outlined,
-                          size: 20,
-                          color: Colors.grey,
+    return BaseBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent, 
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const Text(
+            'Pilih Waktu',
+            style: TextStyle(color: Colors.white, fontSize: 30, fontFamily: 'InriaSerif', fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: isLoadingBarber
+            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            : Stack(
+                children: [
+                  ListView(
+                    padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 200),
+                    children: [
+                      // ── 1. CARD CAPSTER DENGAN DATA DINAMIS ─────────────────
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E1E1E).withOpacity(0.85), 
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          selectedDate != null
-                              ? _dateDisplay(selectedDate!)
-                              : 'Tap untuk pilih tanggal',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: selectedDate != null
-                                ? Colors.black87
-                                : Colors.grey,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Pilihan Capster',
+                                    style: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: selectedBarberId,
+                                      dropdownColor: const Color(0xFF222222),
+                                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                                      isDense: true,
+                                      alignment: Alignment.centerLeft,
+                                      style: const TextStyle(
+                                        color: Colors.white, 
+                                        fontSize: 18, 
+                                        fontWeight: FontWeight.bold, 
+                                        fontFamily: 'InriaSerif'
+                                      ),
+                                      items: barberList.map((barber) {
+                                        return DropdownMenuItem<String>(
+                                          value: barber.id,
+                                          child: Text(barber.nama),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          selectedBarberId = val;
+                                        });
+                                        _loadSlots(); 
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    currentDetails['quote']!,
+                                    style: const TextStyle(color: Colors.grey, fontSize: 12, fontStyle: FontStyle.italic),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 100,
+                              height: 110,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                image: DecorationImage(
+                                  image: AssetImage(currentDetails['image']!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+
+                      // ── 2. HORIZONTAL DATE PICKER ───────────────────────────
+                      _sectionLabel(Icons.calendar_today, 'Pilih Tanggal'),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 75,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _daysList.length,
+                          itemBuilder: (context, index) {
+                            final day = _daysList[index];
+                            final isSelected = day.day == selectedDate.day && day.month == selectedDate.month;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => selectedDate = day);
+                                _loadSlots();
+                              },
+                              child: Container(
+                                width: 60,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFE5E5E5) : const Color(0xFF1E1E1E).withOpacity(0.6),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _getNamaHari(day.weekday),
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.black : Colors.grey,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '${day.day}',
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.black : Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+
+                      // ── 3. SERVICES SECTION ──────────────────────────────────
+                      // String nama layanan di bawah ini sudah sama persis dengan opsi Enum MySQL Anda
+                      _sectionLabel(Icons.content_cut, 'Services'),
+                      const SizedBox(height: 12),
+                      _buildServiceItem('Junior Cut', 'Cut + Hairstyling', 'Rp 35.000', 'E.T 40 Menit', 35000),
+                      _buildServiceItem('Classic Cut', 'Cut + Hairstyling', 'Rp 40.000', 'E.T 45 Menit', 40000),
+                      _buildServiceItem('Executive Cut', 'Cut + Shower + Hairstyling', 'Rp 50.000', 'E.T 50 Menit', 50000),
+                      const SizedBox(height: 25),
+
+                      // ── 4. SLOT JAM PAGI ─────────────────────────────────────
+                      _sectionLabel(Icons.light_mode_outlined, 'Pagi'),
+                      const SizedBox(height: 12),
+                      isLoadingSlot 
+                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                          : _buildTimeSlots(_getSlotsByTimeOfDay(true)),
+                      const SizedBox(height: 25),
+
+                      // ── 5. SLOT JAM SIANG/SORE ───────────────────────────────
+                      _sectionLabel(Icons.wb_twilight, 'Siang/Sore'),
+                      const SizedBox(height: 12),
+                      isLoadingSlot 
+                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                          : _buildTimeSlots(_getSlotsByTimeOfDay(false)),      
+                    ],
+                  ),
+                    
+                  // ── BOTTOM FLOATING ACTION BAR ──────────────────────────────
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF141414).withOpacity(0.95),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    selectedService,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif'),
+                                  ),
+                                  Text(
+                                    barberList.isNotEmpty 
+                                        ? barberList.firstWhere((b) => b.id == selectedBarberId, orElse: () => barberList.first).nama 
+                                        : 'Ken Paves',
+                                    style: const TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                'Rp ${servicePrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // ── 3. Slot Jam ──────────────────────────────────────────────
-                _label('Pilih Jam Booking'),
-                const SizedBox(height: 8),
-                if (isLoadingSlot)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(54),
+                              backgroundColor: const Color(0xFFE5E5E5),
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: isLoadingSubmit ? null : _submit,
+                            child: isLoadingSubmit
+                                ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Konfirmasi Pesanan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black),
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
-                else if (selectedDate == null || selectedBarberId == null)
-                  _hint('Pilih barber dan tanggal untuk melihat slot tersedia.')
-                else if (slotList.isEmpty)
-                  _hint('Tidak ada slot tersedia untuk barber dan tanggal ini.')
-                else
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: slotList.map((slot) {
-                      final isSelected = selectedSlot == slot;
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedSlot = slot),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.black
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Text(
-                            slot,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black87,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                const SizedBox(height: 20),
-
-                // ── 4. Submit ────────────────────────────────────────────────
-                const SizedBox(height: 32),
-
-                // ── 5. Submit ────────────────────────────────────────────────
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: isLoadingSubmit ? null : _submit,
-                  child: isLoadingSubmit
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Pesan Sekarang',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 
-  Widget _label(String text) => Text(
-    text,
-    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-  );
+  Widget _sectionLabel(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'InriaSerif'),
+        ),
+      ],
+    );
+  }
 
-  Widget _hint(String text) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Text(
-      text,
-      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-    ),
-  );
+  Widget _buildServiceItem(String name, String desc, String price, String duration, int rawPrice) {
+    final isSelected = selectedService == name;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedService = name;
+          servicePrice = rawPrice;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E).withOpacity(0.6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFE5E5E5) : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
+                const SizedBox(height: 4),
+                Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(price, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(duration, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeSlots(List<String> slots) {
+    if (slots.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          'Tidak ada slot tersedia (Sudah dipesan)',
+          style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13, fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: slots.map((slot) {
+        final isSelected = selectedSlot == slot;
+        return GestureDetector(
+          onTap: () => setState(() => selectedSlot = slot),
+          child: Container(
+            width: (MediaQuery.of(context).size.width - 64) / 3,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.transparent : const Color(0xFF1E1E1E).withOpacity(0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? const Color(0xFFE5E5E5) : Colors.transparent,
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                slot,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey,
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
+

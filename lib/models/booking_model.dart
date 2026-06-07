@@ -5,6 +5,7 @@ class BookingModel {
   final String time;
   final String queue;
   final String status;
+  final String? layanan; // Tambahkan variabel layanan jika diperlukan
 
   BookingModel({
     required this.bookingId,
@@ -13,6 +14,7 @@ class BookingModel {
     required this.time,
     required this.queue,
     required this.status,
+    required this.layanan, // Tambahkan parameter layanan jika diperlukan
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class BookingModel {
       time: json['booking_time'] ?? '',
       queue: (json['queue_number'] ?? '').toString(),
       status: json['status'] ?? 'belum bayar',
+      layanan: json['layanan'] ?? json['service'] ?? '', // Tambahkan inisialisasi variabel layanan
     );
   }
 }
