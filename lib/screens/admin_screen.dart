@@ -1,5 +1,3 @@
-//skip dulu
-
 import 'package:flutter/material.dart';
 import '../models/barber_model.dart';
 import '../services/barber_service.dart';
@@ -79,8 +77,18 @@ class _AdminScreenState extends State<AdminScreen> {
     try {
       final data = await AdminService.getBarberQueue(selectedBarberId);
       if (!mounted) return;
+
+      // 1. Dapatkan tanggal hari ini dengan format YYYY-MM-DD
+      final now = DateTime.now();
+      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+      // 2. Filter data mentah agar hanya menampilkan antrian hari ini saja
+      final rawList = data ?? [];
+      final todayQueue = rawList.where((item) => _date(item) == todayStr).toList();
+
       setState(() {
-        queueList = data ?? [];
+        // 3. Masukkan data yang sudah difilter ke dalam queueList
+        queueList = todayQueue;
         queueList.sort((a, b) => _queueNum(a).compareTo(_queueNum(b)));
         isLoading = false;
       });
@@ -200,7 +208,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               ),
                               SizedBox(height: 12),
                               Text(
-                                'Belum ada antrian',
+                                'Belum ada antrian hari ini',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
@@ -371,31 +379,6 @@ class _QueueCard extends StatelessWidget {
                           ),
                         ),
                     ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isFirst
-                        ? Colors.green.shade50
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isFirst ? Colors.green : Colors.grey.shade300,
-                    ),
-                  ),
-                  child: Text(
-                    isFirst ? 'Dilayani' : 'Menunggu',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isFirst
-                          ? Colors.green.shade800
-                          : Colors.grey.shade600,
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
                 ),
               ],
