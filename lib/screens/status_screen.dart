@@ -67,7 +67,7 @@ List<bool> expanded = [];
       case 'cancel':
         return 'Dibatalkan';
       case 'belum bayar':
-        return 'Menunggu Pembayaran';
+        return 'Menunggu';
       default:
         return status;
     }
