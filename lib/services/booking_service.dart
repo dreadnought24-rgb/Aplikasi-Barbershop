@@ -111,4 +111,52 @@ static Future<List<BookingModel>> getBooking(int userId) async {
       return [];
     }
   }
+
+  // 5. Update queue setelah booking selesai/cancel
+static Future<bool> updateQueue({
+  required String bookingId,
+  required String pencukurId,
+}) async {
+  try {
+    // Tambah print ini sementara
+    print('UPDATEQUEUE bookingId: $bookingId');
+    print('UPDATEQUEUE pencukurId: $pencukurId');
+
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/admin/update_queue.php'),
+          body: {
+            'booking_id': bookingId,
+            'pencukur_id': pencukurId,
+          },
+        )
+        .timeout(const Duration(seconds: 10));
+
+    // Tambah print response
+    print('UPDATEQUEUE response: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    }
+    return false;
+  } catch (e) {
+    print('UPDATEQUEUE ERROR: $e');
+    return false;
+  }
+}
+
+// 6. Cek beban barber setelah booking
+static Future<void> checkBarberLoad() async {
+  try {
+    await http
+        .post(Uri.parse('$baseUrl/admin/check_barber_load.php'))
+        .timeout(const Duration(seconds: 10));
+  } catch (e) {
+    // Silent fail - tidak perlu notif ke user
+  }
+}
+
+
+
 }

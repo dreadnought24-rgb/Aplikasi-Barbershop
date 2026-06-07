@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import '../screens/login_screen.dart'; // Pastikan membuat file ini
+import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/booking_screen.dart';
 import '../screens/status_screen.dart';
-import '../screens/main_navigation.dart'; // Impor main_navigation
+import '../screens/main_navigation.dart';
 import '../screens/admin_screen.dart';
-import '../widgets/splashlogo.dart'; // Impor SplashLogo
+import '../widgets/splashlogo.dart';
+import '../screens/konfirmasi_screen.dart'; // ← TAMBAHAN
 
 class AppRoutes {
   static const String login = '/login';
   static const String mainNav = '/main_nav';
-  static const String home = '/home' ;
+  static const String home = '/home';
   static const String booking = '/booking';
   static const String status = '/status';
   static const String admin = '/admin';
   static const String splash = '/splash';
+  static const String konfirmasi = '/konfirmasi'; // ← TAMBAHAN
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -29,6 +31,10 @@ class AppRoutes {
       home: (context) => const HomeScreen(),
       booking: (context) => const BookingScreen(),
       status: (context) => const StatusScreen(),
+      konfirmasi: (context) { // ← TAMBAHAN
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+        return KonfirmasiScreen(data: args);
+      },
     };
   }
 }

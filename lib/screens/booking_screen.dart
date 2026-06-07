@@ -4,8 +4,8 @@ import '../models/barber_model.dart';
 import '../services/barber_service.dart';
 import '../services/booking_service.dart';
 import '../config/routes.dart';
-import '../controllers/booking_controller.dart';
-import '../widgets/base_background.dart'; 
+// import '../controllers/booking_controller.dart';
+import '../widgets/base_background.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -15,25 +15,27 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final BookingController _controller = BookingController();
+  // final BookingController _controller = BookingController();
 
   List<BarberModel> barberList = [];
   List<String> slotList = [];
   String? selectedBarberId;
   String? selectedSlot;
   DateTime selectedDate = DateTime.now();
-  
+
   // ── SINKRONISASI ENUM ──────────────────────────────────────────────────────
   // Nilai default awal disamakan dengan salah satu opsi Enum database Anda
   String selectedService = 'Classic Cut';
   int servicePrice = 40000;
-
   bool isLoadingBarber = true;
   bool isLoadingSlot = false;
   bool isLoadingSubmit = false;
   int _userId = 0;
 
-  final List<DateTime> _daysList = List.generate(7, (index) => DateTime.now().add(Duration(days: index)));
+  final List<DateTime> _daysList = List.generate(
+    7,
+    (index) => DateTime.now().add(Duration(days: index)),
+  );
 
   // ── MAP DATA UNTUK FOTO & QUOTES BERDASARKAN NAMA/ID CAPSTER ─────────────────
   final Map<String, Map<String, String>> _capsterDetails = {
@@ -129,49 +131,54 @@ class _BookingScreenState extends State<BookingScreen> {
         'quote': '"Precision is the only standard."',
       };
     }
-    
+
     final currentBarber = barberList.firstWhere(
       (b) => b.id == selectedBarberId,
       orElse: () => barberList.first,
     );
 
-    return _capsterDetails[currentBarber.nama] ?? {
-      'image': 'images/capster_andi.jpg',
-      'quote': '"Precision is the only standard."',
-    };
+    return _capsterDetails[currentBarber.nama] ??
+        {
+          'image': 'images/capster_andi.jpg',
+          'quote': '"Precision is the only standard."',
+        };
   }
 
-  Future<void> _submit() async {
-    if (selectedBarberId == null) {
-      _snack('Pilih barber terlebih dahulu.', isError: true);
-      return;
-    }
-    if (selectedSlot == null) {
-      _snack('Pilih jam dari slot yang tersedia.', isError: true);
-      return;
-    }
+  //bagian submit
 
-    setState(() => isLoadingSubmit = true);
+  // Future<void> _submit() async {
+  //   if (selectedBarberId == null) {
+  //     _snack('Pilih barber terlebih dahulu.', isError: true);
+  //     return;
+  //   }
+  //   if (selectedSlot == null) {
+  //     _snack('Pilih jam dari slot yang tersedia.', isError: true);
+  //     return;
+  //   }
 
-    // Mengirim string murni ('Classic Cut', 'Junior Cut', atau 'Executive Cut') ke Controller
-    final isSuccess = await _controller.createBooking(
-      userId: _userId.toString(),
-      pencukurId: selectedBarberId!,
-      bookingDate: _dateForApi(selectedDate),
-      bookingTime: '$selectedSlot:00',
-      service: selectedService, 
-    );
+  //   setState(() => isLoadingSubmit = true);
 
-    if (!mounted) return;
-    setState(() => isLoadingSubmit = false);
+  //   // Mengirim string murni ('Classic Cut', 'Junior Cut', atau 'Executive Cut') ke Controller
+  //   final isSuccess = await _controller.createBooking(
+  //     userId: _userId.toString(),
+  //     pencukurId: selectedBarberId!,
+  //     bookingDate: _dateForApi(selectedDate),
+  //     bookingTime: '$selectedSlot:00',
+  //     service: selectedService,
+  //   );
 
-    _snack(_controller.statusMessage, isError: !isSuccess);
+  //   if (!mounted) return;
+  //   setState(() => isLoadingSubmit = false);
 
-    if (isSuccess) {
-      await _loadSlots(); 
-      Navigator.pushReplacementNamed(context, AppRoutes.mainNav);
-    }
-  }
+  //   _snack(_controller.statusMessage, isError: !isSuccess);
+
+  //   if (isSuccess) {
+  //     await _loadSlots();
+  //     Navigator.pushReplacementNamed(context, AppRoutes.mainNav);
+  //   }
+  // }
+
+  //bagian submit
 
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -189,28 +196,40 @@ class _BookingScreenState extends State<BookingScreen> {
 
     return BaseBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent, 
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           automaticallyImplyLeading: false,
           title: const Text(
             'Pilih Waktu',
-            style: TextStyle(color: Colors.white, fontSize: 30, fontFamily: 'InriaSerif', fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontFamily: 'InriaSerif',
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         body: isLoadingBarber
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
             : Stack(
                 children: [
                   ListView(
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 200),
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 10,
+                      bottom: 200,
+                    ),
                     children: [
                       // ── 1. CARD CAPSTER DENGAN DATA DINAMIS ─────────────────
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E1E).withOpacity(0.85), 
+                          color: const Color(0xFF1E1E1E).withOpacity(0.85),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
@@ -221,21 +240,28 @@ class _BookingScreenState extends State<BookingScreen> {
                                 children: [
                                   const Text(
                                     'Pilihan Capster',
-                                    style: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 13,
+                                      fontFamily: 'InriaSerif',
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
                                       value: selectedBarberId,
                                       dropdownColor: const Color(0xFF222222),
-                                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: Colors.white,
+                                      ),
                                       isDense: true,
                                       alignment: Alignment.centerLeft,
                                       style: const TextStyle(
-                                        color: Colors.white, 
-                                        fontSize: 18, 
-                                        fontWeight: FontWeight.bold, 
-                                        fontFamily: 'InriaSerif'
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'InriaSerif',
                                       ),
                                       items: barberList.map((barber) {
                                         return DropdownMenuItem<String>(
@@ -247,14 +273,18 @@ class _BookingScreenState extends State<BookingScreen> {
                                         setState(() {
                                           selectedBarberId = val;
                                         });
-                                        _loadSlots(); 
+                                        _loadSlots();
                                       },
                                     ),
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
                                     currentDetails['quote']!,
-                                    style: const TextStyle(color: Colors.grey, fontSize: 12, fontStyle: FontStyle.italic),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -269,7 +299,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -285,7 +315,9 @@ class _BookingScreenState extends State<BookingScreen> {
                           itemCount: _daysList.length,
                           itemBuilder: (context, index) {
                             final day = _daysList[index];
-                            final isSelected = day.day == selectedDate.day && day.month == selectedDate.month;
+                            final isSelected =
+                                day.day == selectedDate.day &&
+                                day.month == selectedDate.month;
                             return GestureDetector(
                               onTap: () {
                                 setState(() => selectedDate = day);
@@ -295,7 +327,11 @@ class _BookingScreenState extends State<BookingScreen> {
                                 width: 60,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFE5E5E5) : const Color(0xFF1E1E1E).withOpacity(0.6),
+                                  color: isSelected
+                                      ? const Color(0xFFE5E5E5)
+                                      : const Color(
+                                          0xFF1E1E1E,
+                                        ).withOpacity(0.6),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -304,7 +340,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                     Text(
                                       _getNamaHari(day.weekday),
                                       style: TextStyle(
-                                        color: isSelected ? Colors.black : Colors.grey,
+                                        color: isSelected
+                                            ? Colors.black
+                                            : Colors.grey,
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -313,7 +351,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                     Text(
                                       '${day.day}',
                                       style: TextStyle(
-                                        color: isSelected ? Colors.black : Colors.white,
+                                        color: isSelected
+                                            ? Colors.black
+                                            : Colors.white,
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -331,35 +371,64 @@ class _BookingScreenState extends State<BookingScreen> {
                       // String nama layanan di bawah ini sudah sama persis dengan opsi Enum MySQL Anda
                       _sectionLabel(Icons.content_cut, 'Services'),
                       const SizedBox(height: 12),
-                      _buildServiceItem('Junior Cut', 'Cut + Hairstyling', 'Rp 35.000', 'E.T 40 Menit', 35000),
-                      _buildServiceItem('Classic Cut', 'Cut + Hairstyling', 'Rp 40.000', 'E.T 45 Menit', 40000),
-                      _buildServiceItem('Executive Cut', 'Cut + Shower + Hairstyling', 'Rp 50.000', 'E.T 50 Menit', 50000),
+                      _buildServiceItem(
+                        'Junior Cut',
+                        'Cut + Hairstyling',
+                        'Rp 35.000',
+                        'E.T 40 Menit',
+                        35000,
+                      ),
+                      _buildServiceItem(
+                        'Classic Cut',
+                        'Cut + Hairstyling',
+                        'Rp 40.000',
+                        'E.T 45 Menit',
+                        40000,
+                      ),
+                      _buildServiceItem(
+                        'Executive Cut',
+                        'Cut + Shower + Hairstyling',
+                        'Rp 50.000',
+                        'E.T 50 Menit',
+                        50000,
+                      ),
                       const SizedBox(height: 25),
 
                       // ── 4. SLOT JAM PAGI ─────────────────────────────────────
                       _sectionLabel(Icons.light_mode_outlined, 'Pagi'),
                       const SizedBox(height: 12),
-                      isLoadingSlot 
-                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                      isLoadingSlot
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
                           : _buildTimeSlots(_getSlotsByTimeOfDay(true)),
                       const SizedBox(height: 25),
 
                       // ── 5. SLOT JAM SIANG/SORE ───────────────────────────────
                       _sectionLabel(Icons.wb_twilight, 'Siang/Sore'),
                       const SizedBox(height: 12),
-                      isLoadingSlot 
-                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                          : _buildTimeSlots(_getSlotsByTimeOfDay(false)),      
+                      isLoadingSlot
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : _buildTimeSlots(_getSlotsByTimeOfDay(false)),
                     ],
                   ),
-                    
+
                   // ── BOTTOM FLOATING ACTION BAR ──────────────────────────────
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF141414).withOpacity(0.95),
                         borderRadius: const BorderRadius.only(
@@ -378,19 +447,37 @@ class _BookingScreenState extends State<BookingScreen> {
                                 children: [
                                   Text(
                                     selectedService,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'InriaSerif',
+                                    ),
                                   ),
                                   Text(
-                                    barberList.isNotEmpty 
-                                        ? barberList.firstWhere((b) => b.id == selectedBarberId, orElse: () => barberList.first).nama 
+                                    barberList.isNotEmpty
+                                        ? barberList
+                                              .firstWhere(
+                                                (b) => b.id == selectedBarberId,
+                                                orElse: () => barberList.first,
+                                              )
+                                              .nama
                                         : 'Ken Paves',
-                                    style: const TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'InriaSerif'),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 13,
+                                      fontFamily: 'InriaSerif',
+                                    ),
                                   ),
                                 ],
                               ),
                               Text(
                                 'Rp ${servicePrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -400,24 +487,78 @@ class _BookingScreenState extends State<BookingScreen> {
                               minimumSize: const Size.fromHeight(54),
                               backgroundColor: const Color(0xFFE5E5E5),
                               foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            onPressed: isLoadingSubmit ? null : _submit,
+                            onPressed: () {
+                              if (selectedBarberId == null) {
+                                _snack(
+                                  'Pilih barber terlebih dahulu.',
+                                  isError: true,
+                                );
+                                return;
+                              }
+                              if (selectedSlot == null) {
+                                _snack(
+                                  'Pilih jam dari slot yang tersedia.',
+                                  isError: true,
+                                );
+                                return;
+                              }
+
+                              final selectedBarberName = barberList
+                                  .firstWhere((b) => b.id == selectedBarberId)
+                                  .nama;
+
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.konfirmasi,
+                                arguments: {
+                                  'userId': _userId.toString(),
+                                  'barberId': selectedBarberId!,
+                                  'barberName': selectedBarberName,
+                                  'date': _dateForApi(selectedDate),
+                                  'time': '$selectedSlot:00',
+                                  'service': selectedService,
+                                  'price': servicePrice,
+                                },
+                              );
+                            },
+
                             child: isLoadingSubmit
-                                ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
                                 : const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text('Konfirmasi Pesanan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
+                                      Text(
+                                        'Konfirmasi Pesanan',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'InriaSerif',
+                                        ),
+                                      ),
                                       SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 14,
+                                        color: Colors.black,
+                                      ),
                                     ],
                                   ),
                           ),
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
       ),
@@ -431,13 +572,23 @@ class _BookingScreenState extends State<BookingScreen> {
         const SizedBox(width: 8),
         Text(
           text,
-          style: const TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'InriaSerif'),
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+            fontFamily: 'InriaSerif',
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildServiceItem(String name, String desc, String price, String duration, int rawPrice) {
+  Widget _buildServiceItem(
+    String name,
+    String desc,
+    String price,
+    String duration,
+    int rawPrice,
+  ) {
     final isSelected = selectedService == name;
     return GestureDetector(
       onTap: () {
@@ -463,17 +614,38 @@ class _BookingScreenState extends State<BookingScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'InriaSerif',
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                Text(
+                  desc,
+                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                ),
               ],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(price, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(duration, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                Text(
+                  duration,
+                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                ),
               ],
             ),
           ],
@@ -489,7 +661,11 @@ class _BookingScreenState extends State<BookingScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Text(
           'Tidak ada slot tersedia (Sudah dipesan)',
-          style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13, fontStyle: FontStyle.italic),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.3),
+            fontSize: 13,
+            fontStyle: FontStyle.italic,
+          ),
         ),
       );
     }
@@ -504,10 +680,14 @@ class _BookingScreenState extends State<BookingScreen> {
             width: (MediaQuery.of(context).size.width - 64) / 3,
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.transparent : const Color(0xFF1E1E1E).withOpacity(0.6),
+              color: isSelected
+                  ? Colors.transparent
+                  : const Color(0xFF1E1E1E).withOpacity(0.6),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isSelected ? const Color(0xFFE5E5E5) : Colors.transparent,
+                color: isSelected
+                    ? const Color(0xFFE5E5E5)
+                    : Colors.transparent,
                 width: 1.5,
               ),
             ),
@@ -527,4 +707,3 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 }
-

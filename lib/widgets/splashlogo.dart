@@ -57,6 +57,8 @@ class _SplashLogoState extends State<SplashLogo> {
 
   @override
   Widget build(BuildContext context) {
+
+    
     // 2. Gunakan BaseBackground sebagai pembungkus utama menggantikan Scaffold bawaan
     return BaseBackground(
       child: Center(

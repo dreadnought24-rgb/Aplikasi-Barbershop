@@ -1,4 +1,4 @@
-import 'dart:io';
+// import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/barber_model.dart';
@@ -6,6 +6,8 @@ import '../services/barber_service.dart';
 import '../services/admin_service.dart';
 import '../widgets/base_background.dart';
 import '../services/profile_service.dart';
+import '../services/booking_service.dart';
+// import '../services/notification_service.dart';
 
 class AdminScreen extends StatefulWidget {
   final int adminUserId;
@@ -95,16 +97,39 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  Future<void> _updateStatus(String bookingId, String status) async {
-    final ok = await AdminService.updateBookingStatus(id: bookingId, status: status);
-    if (!mounted) return;
-    if (ok) {
-      _snack(status == 'bayar' ? 'Pembayaran dikonfirmasi ✓' : 'Booking dibatalkan');
-      await _loadQueue();
-    } else {
-      _snack('Gagal memperbarui status.', isError: true);
-    }
+//yang narik queue
+Future<void> _updateStatus(String bookingId, String status) async {
+  print('_updateStatus dipanggil: bookingId=$bookingId, status=$status');
+  
+  final ok = await AdminService.updateBookingStatus(id: bookingId, status: status);
+  print('updateBookingStatus result: $ok');
+  
+  if (!mounted) return;
+
+  if (ok) {
+    print('DEBUG bookingId: $bookingId');
+    print('DEBUG pencukurId: $selectedBarberId');
+
+    await BookingService.updateQueue(
+      bookingId: bookingId,
+      pencukurId: selectedBarberId,
+    );
+
+    await BookingService.checkBarberLoad();
+
+    // if (status == 'cancel'){
+    //   await NotificationService.cancelNotification(int.tryParse(bookingId) ?? 0);
+    // }
+
+    _snack(status == 'bayar' ? 'Pembayaran dikonfirmasi ✓' : 'Booking dibatalkan');
+    await _loadQueue();
+  } else {
+    _snack('Gagal memperbarui status.', isError: true);
   }
+}
+
+//narik queue
+
 
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -153,44 +178,44 @@ class _AdminScreenState extends State<AdminScreen> {
                 child: Row(
                   children: [
                     // X button
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: const Color(0xFF1E1E1E),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            title: const Text('Keluar Aplikasi?',
-                                style: TextStyle(color: Colors.white, fontFamily: 'InriaSerif')),
-                            content: const Text('Yakin ingin menutup aplikasi?',
-                                style: TextStyle(color: Colors.grey)),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Batal', style: TextStyle(color: Colors.grey)),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  SystemNavigator.pop();
-                                },
-                                child: const Text('Keluar',
-                                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white10,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.close, color: Colors.white, size: 18),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     showDialog(
+                    //       context: context,
+                    //       builder: (ctx) => AlertDialog(
+                    //         backgroundColor: const Color(0xFF1E1E1E),
+                    //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    //         title: const Text('Keluar Aplikasi?',
+                    //             style: TextStyle(color: Colors.white, fontFamily: 'InriaSerif')),
+                    //         content: const Text('Yakin ingin menutup aplikasi?',
+                    //             style: TextStyle(color: Colors.grey)),
+                    //         actions: [
+                    //           TextButton(
+                    //             onPressed: () => Navigator.pop(ctx),
+                    //             child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                    //           ),
+                    //           TextButton(
+                    //             onPressed: () {
+                    //               Navigator.pop(ctx);
+                    //               SystemNavigator.pop();
+                    //             },
+                    //             child: const Text('Keluar',
+                    //                 style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: Container(
+                    //     width: 36,
+                    //     height: 36,
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.white10,
+                    //       borderRadius: BorderRadius.circular(8),
+                    //     ),
+                    //     child: const Icon(Icons.close, color: Colors.white, size: 18),
+                    //   ),
+                    // ),
                     const Spacer(),
                     // Logout button
                     GestureDetector(
@@ -245,6 +270,7 @@ class _AdminScreenState extends State<AdminScreen> {
               ),
 
               // ── Title: List Customer - NamaBarber ──
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -450,21 +476,21 @@ class _QueueCard extends StatefulWidget {
 
 class _QueueCardState extends State<_QueueCard> {
   // 'menunggu' atau 'dilayani' — hanya tampilan lokal di card
-  late String _localStatus;
+  // late String _localStatus;
 
   @override
-  void initState() {
-    super.initState();
-    _localStatus = widget.isFirst ? 'dilayani' : 'menunggu';
-  }
+  // void initState() {
+  //   super.initState();
+  //   _localStatus = widget.isFirst ? 'dilayani' : 'menunggu';
+  // }
 
-  Color get _statusColor =>
-      _localStatus == 'dilayani' ? const Color(0xFF4CAF50) : Colors.white54;
+  // Color get _statusColor =>
+  //     _localStatus == 'dilayani' ? const Color(0xFF4CAF50) : Colors.white54;
 
-  Color get _statusBg =>
-      _localStatus == 'dilayani'
-          ? const Color(0xFF4CAF50).withOpacity(0.15)
-          : Colors.white.withOpacity(0.08);
+  // Color get _statusBg =>
+  //     _localStatus == 'dilayani'
+  //         ? const Color(0xFF4CAF50).withOpacity(0.15)
+  //         : Colors.white.withOpacity(0.08);
 
   @override
   Widget build(BuildContext context) {
@@ -526,72 +552,72 @@ class _QueueCardState extends State<_QueueCard> {
               ),
 
               // ── Dropdown status (menunggu / dilayani) ──
-              GestureDetector(
-                onTapDown: (details) async {
-                  final result = await showMenu<String>(
-                    context: context,
-                    position: RelativeRect.fromLTRB(
-                      details.globalPosition.dx,
-                      details.globalPosition.dy,
-                      details.globalPosition.dx + 1,
-                      details.globalPosition.dy + 1,
-                    ),
-                    color: const Color(0xFF2A2A2A),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    items: [
-                      PopupMenuItem(
-                        value: 'menunggu',
-                        child: Row(
-                          children: [
-                            Icon(Icons.hourglass_empty, size: 16, color: Colors.white54),
-                            const SizedBox(width: 8),
-                            const Text('Menunggu', style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'dilayani',
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle_outline, size: 16, color: Color(0xFF4CAF50)),
-                            const SizedBox(width: 8),
-                            const Text('Dilayani', style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                  if (result != null && mounted) {
-                    setState(() => _localStatus = result);
-                    // 'dilayani'/'menunggu' hanya UI lokal, tidak dikirim ke DB
-                    // DB hanya diupdate lewat tombol Sudah Bayar / Cancel
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _statusBg,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _statusColor.withOpacity(0.4)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _localStatus == 'dilayani' ? 'Dilayani' : 'Menunggu',
-                        style: TextStyle(
-                          color: _statusColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'InriaSerif',
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down, color: _statusColor, size: 14),
-                    ],
-                  ),
-                ),
-              ),
+              // GestureDetector(
+              //   onTapDown: (details) async {
+              //     final result = await showMenu<String>(
+              //       context: context,
+              //       position: RelativeRect.fromLTRB(
+              //         details.globalPosition.dx,
+              //         details.globalPosition.dy,
+              //         details.globalPosition.dx + 1,
+              //         details.globalPosition.dy + 1,
+              //       ),
+              //       color: const Color(0xFF2A2A2A),
+              //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              //       items: [
+              //         PopupMenuItem(
+              //           value: 'menunggu',
+              //           child: Row(
+              //             children: [
+              //               Icon(Icons.hourglass_empty, size: 16, color: Colors.white54),
+              //               const SizedBox(width: 8),
+              //               const Text('Menunggu', style: TextStyle(color: Colors.white70)),
+              //             ],
+              //           ),
+              //         ),
+              //         PopupMenuItem(
+              //           value: 'dilayani',
+              //           child: Row(
+              //             children: [
+              //               Icon(Icons.check_circle_outline, size: 16, color: Color(0xFF4CAF50)),
+              //               const SizedBox(width: 8),
+              //               const Text('Dilayani', style: TextStyle(color: Colors.white70)),
+              //             ],
+              //           ),
+              //         ),
+              //       ],
+              //     );
+              //     if (result != null && mounted) {
+              //       setState(() => _localStatus = result);
+              //       // 'dilayani'/'menunggu' hanya UI lokal, tidak dikirim ke DB
+              //       // DB hanya diupdate lewat tombol Sudah Bayar / Cancel
+              //     }
+              //   },
+              //   child: Container(
+              //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              //     decoration: BoxDecoration(
+              //       color: _statusBg,
+              //       borderRadius: BorderRadius.circular(20),
+              //       border: Border.all(color: _statusColor.withOpacity(0.4)),
+              //     ),
+              //     child: Row(
+              //       mainAxisSize: MainAxisSize.min,
+              //       children: [
+              //         Text(
+              //           _localStatus == 'dilayani' ? 'Dilayani' : 'Menunggu',
+              //           style: TextStyle(
+              //             color: _statusColor,
+              //             fontSize: 12,
+              //             fontWeight: FontWeight.w600,
+              //             fontFamily: 'InriaSerif',
+              //           ),
+              //         ),
+              //         const SizedBox(width: 4),
+              //         Icon(Icons.keyboard_arrow_down, color: _statusColor, size: 14),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
 
