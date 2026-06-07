@@ -40,15 +40,15 @@ class _BookingScreenState extends State<BookingScreen> {
   // ── MAP DATA UNTUK FOTO & QUOTES BERDASARKAN NAMA/ID CAPSTER ─────────────────
   final Map<String, Map<String, String>> _capsterDetails = {
     'Andi': {
-      'image': 'images/capster_andi.jpg',
+      'image': 'assets/images/capster_andi.jpg',
       'quote': '"Precision is the only standard."',
     },
     'Budi': {
-      'image': 'images/capster_budi.jpg',
+      'image': 'assets/images/capster_budi.jpg',
       'quote': '"Style is a reflection of your attitude."',
     },
     'Ceri': {
-      'image': 'images/capster_ceri.jpg',
+      'image': 'assets/images/capster_ceri.jpg',
       'quote': '"Sharp look, sharp mind."',
     },
   };

@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Image.asset(
-                      '/images/barberinLogo.png',
+                      'assets//images/barberinLogo.png',
                       height: 35,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
@@ -104,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       _buildServiceCard(
-                        imagePath: 'images/classic_cut.jpg',
+                        imagePath: 'assets/images/classic_cut.jpg',
                         tag: 'MOST POPULAR',
                         title: 'Classic Cut (Adult)',
                         duration: '45 Mins',
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 15),
                       _buildServiceCard(
-                        imagePath: 'images/junior_cut.jpg',
+                        imagePath: 'assets/images/junior_cut.jpg',
                         tag: 'YOUNG',
                         title: 'Junior Cut',
                         duration: '40 Mins',
@@ -122,7 +122,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 15),
                       _buildServiceCard(
-                        imagePath: 'images/executive_cut.jpg',
+                        imagePath: 'assets/images/executive_cut.jpg',
                         tag: 'PERFECT',
                         title: 'Executive Cut',
                         duration: '50 Mins',

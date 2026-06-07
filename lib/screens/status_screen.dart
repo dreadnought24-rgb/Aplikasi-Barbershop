@@ -46,11 +46,11 @@ class _StatusScreenState extends State<StatusScreen> {
     final name = barberName.toLowerCase().trim();
 
     if (name.contains('andi')) {
-      return 'images/capster_andi.jpg'; 
+      return 'assets/images/capster_andi.jpg'; 
     } else if (name.contains('budi')) {
-      return 'images/capster_budi.jpg';
+      return 'assets/images/capster_budi.jpg';
     } else if (name.contains('ceri')) {
-      return 'images/capster_ceri.jpg';
+      return 'assets/images/capster_ceri.jpg';
     } 
     
     return 'assets/default_avatar.png'; 

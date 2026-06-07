@@ -47,12 +47,12 @@ class _KonfirmasiScreenState extends State<KonfirmasiScreen> {
 
   if (isSuccess) {
   // Jadwalkan notifikasi pengingat
-  final bookingDate = widget.data['date'];     // '2026-06-07'
-  final bookingTime = widget.data['time'];     // '09:00:00'
-  final timeParts = bookingTime.split(':');
-  final bookingDateTime = DateTime.parse(
-    '$bookingDate ${timeParts[0]}:${timeParts[1]}:00'
-  );
+  // final bookingDate = widget.data['date'];     // '2026-06-07'
+  // final bookingTime = widget.data['time'];     // '09:00:00'
+  // final timeParts = bookingTime.split(':');
+  // final bookingDateTime = DateTime.parse(
+  //   '$bookingDate ${timeParts[0]}:${timeParts[1]}:00'
+  // );
 
   // await NotificationService.scheduleBookingReminder(
   //   bookingId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
