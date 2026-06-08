@@ -158,5 +158,39 @@ static Future<void> checkBarberLoad() async {
 }
 
 
+// 7. Update jadwal booking oleh user
+static Future<BookingResponse> updateBookingSchedule({
+  required String bookingId,
+  required String userId,
+  required String bookingDate,
+  required String bookingTime,
+}) async {
+  try {
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/booking/update_booking_user.php'),
+          body: {
+            'booking_id': bookingId,
+            'user_id': userId,
+            'booking_date': bookingDate,
+            'booking_time': bookingTime,
+          },
+        )
+        .timeout(const Duration(seconds: 10));
+
+    // Tambah print ini
+    print('UPDATE SCHEDULE response: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return BookingResponse.fromJson(data);
+    }
+    return BookingResponse(success: false, message: 'Gagal terhubung ke server');
+  } catch (e) {
+    print('UPDATE SCHEDULE ERROR: $e');
+    return BookingResponse(success: false, message: 'Koneksi error: $e');
+  }
+}
+
 
 }

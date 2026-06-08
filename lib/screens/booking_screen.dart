@@ -36,9 +36,8 @@ class _BookingScreenState extends State<BookingScreen> {
   String? selectedBarberId;
   String? selectedSlot;
   DateTime selectedDate = DateTime.now();
-
-  // ── SINKRONISASI ENUM ──────────────────────────────────────────────────────
-  // Nilai default awal disamakan dengan salah satu opsi Enum database Anda
+  String? _editBookingId;
+  bool _isEditMode = false;
   String selectedService = 'Classic Cut';
   int servicePrice = 40000;
   bool isLoadingBarber = true;
@@ -46,12 +45,15 @@ class _BookingScreenState extends State<BookingScreen> {
   bool isLoadingSubmit = false;
   int _userId = 0;
 
+
+  //membuat tanggal max 7 hari kedepan dari hari ini
   final List<DateTime> _daysList = List.generate(
     7,
     (index) => DateTime.now().add(Duration(days: index)),
   );
 
-  // ── MAP DATA UNTUK FOTO & QUOTES BERDASARKAN NAMA/ID CAPSTER ─────────────────
+
+  //DESAIN Tampilan gambar Barber
   final Map<String, Map<String, String>> _capsterDetails = {
     'Andi': {
       'image': 'assets/images/capster_andi.jpg',
@@ -67,8 +69,9 @@ class _BookingScreenState extends State<BookingScreen> {
     },
   };
 
+
   @override
-  void initState() {
+  void initState() {                  //fungsi initstate menjalankan _init
     super.initState();
     // Terapkan initialService sebelum _init() agar UI langsung benar
     if (widget.initialService != null &&
@@ -89,12 +92,27 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    // Cek apakah mode edit
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic> && args['mode'] == 'edit') {
+      _isEditMode = true;
+      _editBookingId = args['bookingId'];
+      selectedBarberId = args['pencukurId'];
+
+      // Set tanggal dan jam sekarang dari data lama
+      if (args['currentDate'] != null) {
+        selectedDate = DateTime.parse(args['currentDate']);
+      }
+    }
+
     try {
       final data = await BarberService.getBarber();
       if (!mounted) return;
       setState(() {
         barberList = data;
-        selectedBarberId = barberList.isNotEmpty ? barberList.first.id : null;
+        if (!_isEditMode) {
+          selectedBarberId = barberList.isNotEmpty ? barberList.first.id : null;
+        }
         isLoadingBarber = false;
       });
       _loadSlots();
@@ -222,9 +240,9 @@ class _BookingScreenState extends State<BookingScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text(
-            'Pilih Waktu',
-            style: TextStyle(
+          title: Text(
+            _isEditMode ? 'Ubah Jadwal' : 'Pilih Waktu',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
               fontFamily: 'InriaSerif',
@@ -532,19 +550,40 @@ class _BookingScreenState extends State<BookingScreen> {
                                   .firstWhere((b) => b.id == selectedBarberId)
                                   .nama;
 
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.konfirmasi,
-                                arguments: {
-                                  'userId': _userId.toString(),
-                                  'barberId': selectedBarberId!,
-                                  'barberName': selectedBarberName,
-                                  'date': _dateForApi(selectedDate),
-                                  'time': '$selectedSlot:00',
-                                  'service': selectedService,
-                                  'price': servicePrice,
-                                },
-                              );
+                              if (_isEditMode) {
+                                // Mode edit → navigasi ke konfirmasi dengan data edit
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.konfirmasi,
+                                  arguments: {
+                                    'mode': 'edit',
+                                    'bookingId': _editBookingId!,
+                                    'userId': _userId.toString(),
+                                    'barberId': selectedBarberId!,
+                                    'barberName': selectedBarberName,
+                                    'date': _dateForApi(selectedDate),
+                                    'time': '$selectedSlot:00',
+                                    'service': selectedService,
+                                    'price': servicePrice,
+                                  },
+                                );
+                              } else {
+                                // Mode normal → seperti sebelumnya
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.konfirmasi,
+                                  arguments: {
+                                    'mode': 'new',
+                                    'userId': _userId.toString(),
+                                    'barberId': selectedBarberId!,
+                                    'barberName': selectedBarberName,
+                                    'date': _dateForApi(selectedDate),
+                                    'time': '$selectedSlot:00',
+                                    'service': selectedService,
+                                    'price': servicePrice,
+                                  },
+                                );
+                              }
                             },
 
                             child: isLoadingSubmit

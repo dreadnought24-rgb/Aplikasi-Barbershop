@@ -3,6 +3,7 @@ import 'package:flutter_application_1/services/booking_service.dart';
 import '../config/routes.dart';
 import '../controllers/booking_controller.dart';
 import '../widgets/base_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import '../services/notification_service.dart';
 
 class KonfirmasiScreen extends StatefulWidget {
@@ -18,14 +19,54 @@ class _KonfirmasiScreenState extends State<KonfirmasiScreen> {
   bool isLoadingSubmit = false;
 
   Future<void> _submit() async {
+  setState(() => isLoadingSubmit = true);
 
-    print('SUBMIT data: ${widget.data}');
-    setState(() => isLoadingSubmit = true);
+  final isEditMode = widget.data['mode'] == 'edit';
+      print('MODE: $isEditMode');
+    print('DATA: ${widget.data}');
 
+  if (isEditMode) {
+    // Mode edit → panggil updateBookingSchedule
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id') ?? 0;
 
+    final response = await BookingService.updateBookingSchedule(
+      bookingId: widget.data['bookingId'],
+      userId: userId.toString(),
+      bookingDate: widget.data['date'],
+      bookingTime: widget.data['time'],
+    );
 
-    
+    if (!mounted) return;
+    setState(() => isLoadingSubmit = false);
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(response.message),
+        backgroundColor: response.success ? Colors.green : Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+   if (response.success) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(response.message),
+      backgroundColor: Colors.green,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+  
+  // Kembali ke main navigation dan refresh
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    AppRoutes.mainNav,
+    (route) => false,
+  );
+}
+
+  } else {
+    // Mode baru → seperti sebelumnya
     final isSuccess = await _controller.createBooking(
       userId: widget.data['userId'],
       pencukurId: widget.data['barberId'],
@@ -45,37 +86,22 @@ class _KonfirmasiScreenState extends State<KonfirmasiScreen> {
       ),
     );
 
-  if (isSuccess) {
-  // Jadwalkan notifikasi pengingat
-  // final bookingDate = widget.data['date'];     // '2026-06-07'
-  // final bookingTime = widget.data['time'];     // '09:00:00'
-  // final timeParts = bookingTime.split(':');
-  // final bookingDateTime = DateTime.parse(
-  //   '$bookingDate ${timeParts[0]}:${timeParts[1]}:00'
-  // );
-
-  // await NotificationService.scheduleBookingReminder(
-  //   bookingId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-  //   barberName: widget.data['barberName'],
-  //   service: widget.data['service'],
-  //   bookingDateTime: bookingDateTime,
-  // );
-
     if (isSuccess) {
       await BookingService.checkBarberLoad();
       Navigator.pushReplacementNamed(context, AppRoutes.mainNav);
     }
   }
+
+  
 }
+
 
   @override
   Widget build(BuildContext context) {
     final data = widget.data;
     final int price = data['price'];
-    final String formattedPrice = 'Rp ${price.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]}.',
-    )}';
+    final String formattedPrice =
+        'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
 
     return BaseBackground(
       child: Scaffold(
@@ -87,9 +113,9 @@ class _KonfirmasiScreenState extends State<KonfirmasiScreen> {
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
-            'Konfirmasi',
-            style: TextStyle(
+          title: Text(
+            widget.data['mode'] == 'edit' ? 'Ubah Jadwal' : 'Konfirmasi',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
               fontFamily: 'InriaSerif',
@@ -125,11 +151,23 @@ class _KonfirmasiScreenState extends State<KonfirmasiScreen> {
                   children: [
                     _buildRow(Icons.content_cut, 'Layanan', data['service']),
                     const Divider(color: Colors.white12, height: 28),
-                    _buildRow(Icons.person_outline, 'Barber', data['barberName']),
+                    _buildRow(
+                      Icons.person_outline,
+                      'Barber',
+                      data['barberName'],
+                    ),
                     const Divider(color: Colors.white12, height: 28),
-                    _buildRow(Icons.calendar_today_outlined, 'Tanggal', data['date']),
+                    _buildRow(
+                      Icons.calendar_today_outlined,
+                      'Tanggal',
+                      data['date'],
+                    ),
                     const Divider(color: Colors.white12, height: 28),
-                    _buildRow(Icons.access_time_outlined, 'Jam', data['time'].toString().substring(0, 5)),
+                    _buildRow(
+                      Icons.access_time_outlined,
+                      'Jam',
+                      data['time'].toString().substring(0, 5),
+                    ),
                     const Divider(color: Colors.white12, height: 28),
                     _buildRow(Icons.payments_outlined, 'Total', formattedPrice),
                   ],
