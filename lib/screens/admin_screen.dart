@@ -18,6 +18,8 @@ class AdminScreen extends StatefulWidget {
 }
 
 class _AdminScreenState extends State<AdminScreen> {
+
+  //variable
   String selectedBarberId = '';
   String adminBarberName = '';
   bool isLoading = true;
@@ -30,6 +32,8 @@ class _AdminScreenState extends State<AdminScreen> {
     _loadData();
   }
 
+
+//fungsi Load Data
   Future<void> _loadData() async {
     setState(() => isLoading = true);
     try {
@@ -65,7 +69,9 @@ class _AdminScreenState extends State<AdminScreen> {
       _snack('Gagal memuat data: $e', isError: true);
     }
   }
+//fungsi Load Data end
 
+//fungsi Load Queue
   Future<void> _loadQueue() async {
     if (selectedBarberId.isEmpty) {
       setState(() { queueList = []; isLoading = false; });
@@ -96,8 +102,9 @@ class _AdminScreenState extends State<AdminScreen> {
       _snack('Gagal memuat antrian: $e', isError: true);
     }
   }
+//fungsi Load Queue
 
-//yang narik queue
+//update Status User
 Future<void> _updateStatus(String bookingId, String status) async {
   print('_updateStatus dipanggil: bookingId=$bookingId, status=$status');
   
@@ -127,18 +134,16 @@ Future<void> _updateStatus(String bookingId, String status) async {
     _snack('Gagal memperbarui status.', isError: true);
   }
 }
+//update Status User end
 
-//narik queue
-
-
+//Desain
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
       backgroundColor: isError ? Colors.red.shade700 : const Color(0xFF2E7D32),
     ));
   }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
+//Desain end
 
   String _val(dynamic item, List<String> keys) {
     if (item is Map<String, dynamic>) {
@@ -162,7 +167,6 @@ Future<void> _updateStatus(String bookingId, String status) async {
   String _bookingId(dynamic item) => _val(item, ['id', 'booking_id']);
   String _queueLabel(dynamic item) => _val(item, ['queue_number']);
 
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -349,8 +353,8 @@ Future<void> _updateStatus(String bookingId, String status) async {
                                 time: _time(item),
                                 bookingId: bookingId,
                                 isFirst: isFirst,
-                                onBayar: () => _updateStatus(bookingId, 'bayar'),
-                                onCancel: () => _confirmCancel(context, name, bookingId),
+                                onBayar: () => _updateStatus(bookingId, 'bayar'),                                     //TOMBOL BAYAR
+                                onCancel: () => _confirmCancel(context, name, bookingId),                             //TOMBOL CANCEL
                                 onStatusChange: (newStatus) => _updateStatus(bookingId, newStatus),
                               );
                             },

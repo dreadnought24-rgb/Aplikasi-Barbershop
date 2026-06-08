@@ -22,8 +22,7 @@ class _StatusScreenState extends State<StatusScreen> {
     super.initState();
     _loadBooking();
   }
-
-
+  
   Future<void> _loadBooking() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('user_id') ?? 0;
@@ -33,10 +32,7 @@ class _StatusScreenState extends State<StatusScreen> {
     if (!mounted) return;
     setState(() {
       bookings = data;
-      expanded = List.generate(
-        data.length,
-        (_) => false,
-      );
+      expanded = List.generate(data.length, (_) => false);
       isLoading = false;
     });
   }
@@ -46,14 +42,14 @@ class _StatusScreenState extends State<StatusScreen> {
     final name = barberName.toLowerCase().trim();
 
     if (name.contains('andi')) {
-      return 'assets/images/capster_andi.jpg'; 
+      return 'assets/images/capster_andi.jpg';
     } else if (name.contains('budi')) {
       return 'assets/images/capster_budi.jpg';
     } else if (name.contains('ceri')) {
       return 'assets/images/capster_ceri.jpg';
-    } 
-    
-    return 'assets/default_avatar.png'; 
+    }
+
+    return 'assets/default_avatar.png';
   }
 
   String _formatTime(String time) {
@@ -96,10 +92,10 @@ class _StatusScreenState extends State<StatusScreen> {
           title: const Text(
             'Status Booking',
             style: TextStyle(
-              color: Colors.white, 
-              fontSize: 24, 
-              fontFamily: 'InriaSerif', 
-              fontWeight: FontWeight.bold
+              color: Colors.white,
+              fontSize: 24,
+              fontFamily: 'InriaSerif',
+              fontWeight: FontWeight.bold,
             ),
           ),
           backgroundColor: Colors.transparent,
@@ -107,10 +103,12 @@ class _StatusScreenState extends State<StatusScreen> {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
             : bookings.isEmpty
-                ? _buildEmpty()
-                : _buildList(),
+            ? _buildEmpty()
+            : _buildList(),
       ),
     );
   }
@@ -128,7 +126,12 @@ class _StatusScreenState extends State<StatusScreen> {
           const SizedBox(height: 16),
           const Text(
             'Belum ada booking aktif',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white, fontFamily: 'InriaSerif'),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              fontFamily: 'InriaSerif',
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -140,12 +143,20 @@ class _StatusScreenState extends State<StatusScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE5E5E5),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: () =>
                 Navigator.pushReplacementNamed(context, AppRoutes.booking),
-            child: const Text('Booking Sekarang', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'InriaSerif')),
+            child: const Text(
+              'Booking Sekarang',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'InriaSerif',
+              ),
+            ),
           ),
         ],
       ),
@@ -179,7 +190,7 @@ class _StatusScreenState extends State<StatusScreen> {
                 Row(
                   children: [
                     CircleAvatar(
-                      radius: 24, 
+                      radius: 24,
                       backgroundColor: Colors.white.withOpacity(0.1),
                       backgroundImage: AssetImage(_getBarberAsset(b.barber)),
                     ),
@@ -194,7 +205,7 @@ class _StatusScreenState extends State<StatusScreen> {
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              fontFamily: 'InriaSerif'
+                              fontFamily: 'InriaSerif',
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -205,7 +216,8 @@ class _StatusScreenState extends State<StatusScreen> {
                               color: Colors.grey,
                               fontSize: 14,
                             ),
-                            overflow: TextOverflow.ellipsis, // Mencegah teks meluber jika terlalu panjang
+                            overflow: TextOverflow
+                                .ellipsis, // Mencegah teks meluber jika terlalu panjang
                           ),
                         ],
                       ),
@@ -220,11 +232,7 @@ class _StatusScreenState extends State<StatusScreen> {
                 ),
                 if (expanded[index]) ...[
                   const SizedBox(height: 20),
-                  _infoRow(
-                    Icons.calendar_today_outlined,
-                    "Tanggal",
-                    b.date,
-                  ),
+                  _infoRow(Icons.calendar_today_outlined, "Tanggal", b.date),
                   const SizedBox(height: 10),
                   _infoRow(
                     Icons.access_time_outlined,
@@ -269,7 +277,7 @@ class _StatusScreenState extends State<StatusScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                            fontFamily: 'InriaSerif'
+                            fontFamily: 'InriaSerif',
                           ),
                         ),
                         const Spacer(),
@@ -281,7 +289,9 @@ class _StatusScreenState extends State<StatusScreen> {
                           decoration: BoxDecoration(
                             color: _statusColor(b.status).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: _statusColor(b.status).withOpacity(0.3)),
+                            border: Border.all(
+                              color: _statusColor(b.status).withOpacity(0.3),
+                            ),
                           ),
                           child: Text(
                             _statusLabel(b.status),
@@ -292,6 +302,48 @@ class _StatusScreenState extends State<StatusScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ],
+                // Tambah tombol Ubah Jadwal hanya jika status belum bayar
+                if (b.status.toLowerCase() == 'belum bayar') ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.edit_calendar_outlined, size: 16),
+                      label: const Text(
+                        'Ubah Jadwal',
+                        style: TextStyle(
+                          fontFamily: 'InriaSerif',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          AppRoutes.booking,
+                          arguments: {
+                            'mode': 'edit',
+                            'bookingId': b.bookingId,
+                            'pencukurId': b.pencukurId, // ← sekarang ada
+                            'currentDate': b.date,
+                            'currentTime': b.time,
+                          },
+                        );
+
+                        if (result == true && mounted) {
+                          _loadBooking();
+                        }
+                      },
                     ),
                   ),
                 ],
@@ -318,12 +370,21 @@ class _StatusScreenState extends State<StatusScreen> {
           const SizedBox(width: 10),
           Text(
             label,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.grey, fontFamily: 'InriaSerif'),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+              fontFamily: 'InriaSerif',
+            ),
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
