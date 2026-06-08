@@ -22,10 +22,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
 
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Username dan password tidak boleh kosong', style: TextStyle(fontFamily: 'InriaSerif')),
+          content: Text('Username tidak boleh kosong', style: TextStyle(fontFamily: 'InriaSerif')),
+        ),
+      );
+      return;
+    }
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password tidak boleh kosong', style: TextStyle(fontFamily: 'InriaSerif')),
         ),
       );
       return;
@@ -82,6 +90,17 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Logo BARBERIN di atas heading
+              Center(
+                child: Image.asset(
+                  'assets/images/barberinLogo.png',
+                  height: 100,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(height: 32),
+
               // Teks utama "Hi, Siap Cukur?" menggunakan InriaSerif
               const Text(
                 'Hi,\nSiap Cukur?',

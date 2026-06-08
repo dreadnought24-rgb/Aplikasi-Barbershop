@@ -14,7 +14,8 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
-  String _username = 'User'; // ← state username
+  String _username = 'User';
+  String? _pendingService; // layanan yang akan di-pre-seleksi di BookingScreen
 
   @override
   void initState() {
@@ -28,8 +29,21 @@ class _MainNavigationState extends State<MainNavigation> {
     setState(() => _username = profile.username);
   }
 
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+  /// Pindah tab, opsional bawa nama layanan untuk pre-seleksi di BookingScreen
+  void _onItemTapped(int index, {String? service}) {
+    setState(() {
+      _selectedIndex = index;
+      if (index == 1 && service != null && service.trim().isNotEmpty) {
+        _pendingService = service;
+      }
+    });
+  }
+
+  /// Dipanggil oleh BookingScreen setelah selesai menerapkan initialService
+  void _clearPendingService() {
+    if (_pendingService != null) {
+      setState(() => _pendingService = null);
+    }
   }
 
   @override
@@ -37,9 +51,11 @@ class _MainNavigationState extends State<MainNavigation> {
     final List<Widget> screens = [
       HomeScreen(
         onChangeTab: _onItemTapped,
-        username: _username, // ← pass ke HomeScreen
+        username: _username,
       ),
-      BookingScreen(),
+      BookingScreen(
+        initialService: _pendingService,
+      ),
       StatusScreen(),
       ProfileScreen(),
     ];
@@ -49,7 +65,7 @@ class _MainNavigationState extends State<MainNavigation> {
       body: screens[_selectedIndex],
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (i) => _onItemTapped(i),
       ),
     );
   }

@@ -8,7 +8,14 @@ import '../config/routes.dart';
 import '../widgets/base_background.dart';
 
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({super.key});
+  final String? initialService;
+  final VoidCallback? onServiceApplied;
+
+  const BookingScreen({
+    super.key,
+    this.initialService,
+    this.onServiceApplied,
+  });
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -16,6 +23,13 @@ class BookingScreen extends StatefulWidget {
 
 class _BookingScreenState extends State<BookingScreen> {
   // final BookingController _controller = BookingController();
+
+  // ── PEMETAAN LAYANAN → HARGA ──────────────────────────────────────────────
+  static const Map<String, int> _servicePriceMap = {
+    'Junior Cut': 35000,
+    'Classic Cut': 40000,
+    'Executive Cut': 50000,
+  };
 
   List<BarberModel> barberList = [];
   List<String> slotList = [];
@@ -56,6 +70,13 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void initState() {
     super.initState();
+    // Terapkan initialService sebelum _init() agar UI langsung benar
+    if (widget.initialService != null &&
+        _servicePriceMap.containsKey(widget.initialService)) {
+      selectedService = widget.initialService!;
+      servicePrice = _servicePriceMap[widget.initialService!]!;
+    }
+    widget.onServiceApplied?.call(); // reset _pendingService di MainNavigation
     _init();
   }
 
@@ -455,14 +476,14 @@ class _BookingScreenState extends State<BookingScreen> {
                                     ),
                                   ),
                                   Text(
-                                    barberList.isNotEmpty
-                                        ? barberList
+                                    (barberList.isEmpty || selectedBarberId == null)
+                                        ? 'Pilih Barber'
+                                        : barberList
                                               .firstWhere(
                                                 (b) => b.id == selectedBarberId,
                                                 orElse: () => barberList.first,
                                               )
-                                              .nama
-                                        : 'Ken Paves',
+                                              .nama,
                                     style: const TextStyle(
                                       color: Colors.grey,
                                       fontSize: 13,
@@ -601,7 +622,7 @@ class _BookingScreenState extends State<BookingScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E).withOpacity(0.6),
+          color: isSelected ? const Color(0xFF2A2A2A) : const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? const Color(0xFFE5E5E5) : Colors.transparent,
