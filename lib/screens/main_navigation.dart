@@ -39,13 +39,6 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  /// Dipanggil oleh BookingScreen setelah selesai menerapkan initialService
-  void _clearPendingService() {
-    if (_pendingService != null) {
-      setState(() => _pendingService = null);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [

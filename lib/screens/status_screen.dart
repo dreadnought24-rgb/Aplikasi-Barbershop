@@ -218,9 +218,9 @@ class _StatusScreenState extends State<StatusScreen> {
             color: Colors.grey.shade500,
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Belum ada booking aktif',
-            style: TextStyle(
+          Text(
+            message,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -294,207 +294,217 @@ class _StatusScreenState extends State<StatusScreen> {
   }
 
   Widget _buildList() {
-    return ListView.builder(
-      padding: EdgeInsets.zero,
-      itemCount: _filteredBookings.length,
-      itemBuilder: (context, index) {
-        final b = _filteredBookings[index];
-        final bookingIndex = bookings.indexOf(b);
-        final isExpanded = bookingIndex >= 0 && bookingIndex < expanded.length && expanded[bookingIndex];
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: _buildFilterMenu(),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: _filteredBookings.length,
+            itemBuilder: (context, index) {
+              final b = _filteredBookings[index];
+              final bookingIndex = bookings.indexOf(b);
+              final isExpanded = bookingIndex >= 0 && bookingIndex < expanded.length && expanded[bookingIndex];
 
-        return InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            if (bookingIndex >= 0 && bookingIndex < expanded.length) {
-              setState(() {
-                expanded[bookingIndex] = !expanded[bookingIndex];
-              });
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _cardBackgroundColor(b.status),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.white.withOpacity(0.1),
-                      backgroundImage: AssetImage(_getBarberAsset(b.barber)),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              return InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  if (bookingIndex >= 0 && bookingIndex < expanded.length) {
+                    setState(() {
+                      expanded[bookingIndex] = !expanded[bookingIndex];
+                    });
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _cardBackgroundColor(b.status),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            b.barber,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'InriaSerif',
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.white.withOpacity(0.1),
+                            backgroundImage: AssetImage(_getBarberAsset(b.barber)),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  b.barber,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontFamily: 'InriaSerif',
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${b.date} • ${_formatTime(b.time)} • ${b.layanan}",
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow
+                                      .ellipsis, // Mencegah teks meluber jika terlalu panjang
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "${b.date} • ${_formatTime(b.time)} • ${b.layanan}",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                            ),
-                            overflow: TextOverflow
-                                .ellipsis, // Mencegah teks meluber jika terlalu panjang
+                          Icon(
+                            isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                            color: Colors.white,
                           ),
                         ],
                       ),
-                    ),
-                    Icon(
-                      isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-                if (isExpanded) ...[
-                  const SizedBox(height: 20),
-                  _infoRow(Icons.calendar_today_outlined, "Tanggal", b.date),
-                  const SizedBox(height: 10),
-                  _infoRow(
-                    Icons.access_time_outlined,
-                    "Jam",
-                    _formatTime(b.time),
-                  ),
-                  const SizedBox(height: 10),
-                  _infoRow(
-                    Icons.content_cut,
-                    "Layanan",
-                    b.layanan ?? '',
-                  ),
-                  const SizedBox(height: 10),
-                  _infoRow(
-                    Icons.confirmation_number_outlined,
-                    "No Antrian",
-                    b.queue.toString(),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(37, 37, 37, 0.6),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          size: 18,
-                          color: Colors.grey,
+                      if (isExpanded) ...[
+                        const SizedBox(height: 20),
+                        _infoRow(Icons.calendar_today_outlined, "Tanggal", b.date),
+                        const SizedBox(height: 10),
+                        _infoRow(
+                          Icons.access_time_outlined,
+                          "Jam",
+                          _formatTime(b.time),
                         ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          "Status",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: 'InriaSerif',
-                          ),
+                        const SizedBox(height: 10),
+                        _infoRow(
+                          Icons.content_cut,
+                          "Layanan",
+                          b.layanan ?? '',
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 10),
+                        _infoRow(
+                          Icons.confirmation_number_outlined,
+                          "No Antrian",
+                          b.queue.toString(),
+                        ),
+                        const SizedBox(height: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
-                            color: _statusColor(b.status).withAlpha((0.15 * 255).round()),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _statusColor(b.status).withOpacity(0.3),
+                            color: const Color.fromRGBO(37, 37, 37, 0.6),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                size: 18,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                "Status",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'InriaSerif',
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: _statusColor(b.status).withAlpha((0.15 * 255).round()),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: _statusColor(b.status).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  _statusLabel(b.status),
+                                  style: TextStyle(
+                                    color: _statusColor(b.status),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (b.status.toLowerCase() != 'cancel') ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              icon: const Icon(Icons.cancel_outlined, size: 18),
+                              label: const Text(
+                                'Batalkan Booking',
+                                style: TextStyle(fontFamily: 'InriaSerif', fontWeight: FontWeight.bold),
+                              ),
+                              onPressed: () => _confirmCancelBooking(bookingIndex),
                             ),
                           ),
-                          child: Text(
-                            _statusLabel(b.status),
-                            style: TextStyle(
-                              color: _statusColor(b.status),
-                              fontWeight: FontWeight.bold,
+                        ],
+                      ],
+                      // Tambah tombol Ubah Jadwal hanya jika status belum bayar
+                      if (b.status.toLowerCase() == 'belum bayar') ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.edit_calendar_outlined, size: 16),
+                            label: const Text(
+                              'Ubah Jadwal',
+                              style: TextStyle(
+                                fontFamily: 'InriaSerif',
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white30),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed: () async {
+                              final result = await Navigator.pushNamed(
+                                context,
+                                AppRoutes.booking,
+                                arguments: {
+                                  'mode': 'edit',
+                                  'bookingId': b.bookingId,
+                                  'pencukurId': b.pencukurId, // ← sekarang ada
+                                  'currentDate': b.date,
+                                  'currentTime': b.time,
+                                },
+                              );
+
+                              if (result == true && mounted) {
+                                _loadBooking();
+                              }
+                            },
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                  if (b.status.toLowerCase() != 'cancel') ...[
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        icon: const Icon(Icons.cancel_outlined, size: 18),
-                        label: const Text(
-                          'Batalkan Booking',
-                          style: TextStyle(fontFamily: 'InriaSerif', fontWeight: FontWeight.bold),
-                        ),
-                        onPressed: () => _confirmCancelBooking(bookingIndex),
-                      ),
-                    ),
-                  ],
-                ],
-                // Tambah tombol Ubah Jadwal hanya jika status belum bayar
-                if (b.status.toLowerCase() == 'belum bayar') ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.edit_calendar_outlined, size: 16),
-                      label: const Text(
-                        'Ubah Jadwal',
-                        style: TextStyle(
-                          fontFamily: 'InriaSerif',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      onPressed: () async {
-                        final result = await Navigator.pushNamed(
-                          context,
-                          AppRoutes.booking,
-                          arguments: {
-                            'mode': 'edit',
-                            'bookingId': b.bookingId,
-                            'pencukurId': b.pencukurId, // ← sekarang ada
-                            'currentDate': b.date,
-                            'currentTime': b.time,
-                          },
-                        );
-
-                        if (result == true && mounted) {
-                          _loadBooking();
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
